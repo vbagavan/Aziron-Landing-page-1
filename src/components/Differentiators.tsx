@@ -103,7 +103,7 @@ export default function AzironControlPlane() {
         padding: "60px 20px",
       }}
     >
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet" />
 
       {/* Subtle reactive ambient — very low opacity so white stays white */}
       <div style={{
@@ -119,19 +119,17 @@ export default function AzironControlPlane() {
         transition: "all 1.4s cubic-bezier(0.16, 1, 0.3, 1)",
       }}>
         <div style={{
-          fontSize: 11, letterSpacing: "0.25em", color: "#94A3B8", marginBottom: 22,
-          fontWeight: 500, textTransform: "uppercase",
+          fontSize: 11, letterSpacing: "0.25em", color: "#F97316", marginBottom: 22,
+          fontWeight: 600, textTransform: "uppercase",
         }}>The Aziron Platform</div>
         <h2 style={{
           fontSize: "clamp(48px, 7vw, 84px)", lineHeight: 1.02, letterSpacing: "-0.035em",
-          fontWeight: 600, margin: 0,
+          fontWeight: 700, margin: 0,
         }}>
           A System That<br />
           <span
             className="aziron-grad-text"
             style={{
-              fontFamily: "'Instrument Serif', serif", fontWeight: 400, fontStyle: "italic",
-              // drive the CSS variable so the gradient end-colour reacts to hover
               ["--grad-end" as string]: activeColor,
             }}
           >Executes Intelligence</span>
@@ -271,7 +269,7 @@ export default function AzironControlPlane() {
                   fontSize: 13, fontWeight: 600, letterSpacing: "-0.01em", marginBottom: 3,
                   color: isA ? node.color : "#334155", transition: "color 0.3s",
                 }}>{node.title}</div>
-                <div style={{ fontSize: 11, color: "#94A3B8", lineHeight: 1.45, fontWeight: 300 }}>
+                <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.45, fontWeight: 400 }}>
                   {node.desc}
                 </div>
                 {isA && (

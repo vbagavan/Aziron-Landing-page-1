@@ -100,19 +100,22 @@ export default function Hero() {
           transition={{ duration: 0.6 }}
         >
           {/* eyebrow */}
-          <div className="font-sans text-sm text-black/50 mb-4 tracking-wide">
-            AI-NATIVE PRODUCT ENGINEERING
+          <div className="text-xs font-semibold tracking-widest uppercase text-orange-500 mb-4">
+            AI-Native Product Engineering
           </div>
 
           {/* headline */}
-          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight tracking-tight">
-             From AI Chat → <br />
-            to 
-            <span className="text-[#F97316]">AI Execution</span>
+          <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-7xl font-bold leading-tight tracking-tight">
+            <span className="block whitespace-nowrap">From AI Chat{" "}
+              <svg className="inline-block align-middle mb-1" width="0.75em" height="0.75em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </span>
+            <span className="block">to{" "}<span className="text-[#F97316]">AI Execution</span></span>
           </h1>
 
           {/* subtext */}
-          <p className="font-sans mt-6 text-lg text-black/60 max-w-xl leading-relaxed">
+          <p className="font-sans mt-6 text-lg text-gray-600 leading-relaxed">
                         Build agents that don't just respond — but execute real workflows across your systems.
           </p>
 

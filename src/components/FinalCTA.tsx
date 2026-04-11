@@ -47,7 +47,7 @@ export default function FinalCTA() {
 
         {/* Left — CTA content */}
         <div className="relative z-10 w-1/2 py-16">
-          <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase mb-4">
+          <p className="text-xs font-semibold tracking-widest text-orange-500 uppercase mb-4">
             Production-Ready AI Platform
           </p>
           <h2 className="font-display font-bold text-4xl md:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight text-aziron-dark mb-6">
@@ -59,13 +59,13 @@ export default function FinalCTA() {
           <div className="flex flex-wrap gap-4">
             <a
               href="#get-started"
-              className="px-8 py-4 bg-aziron-dark text-white font-semibold rounded-lg hover:bg-aziron-navy transition-all duration-300 shadow-lg hover:shadow-xl text-base"
+              className="px-8 py-4 bg-[#F97316] text-white font-semibold rounded-lg hover:bg-[#EA580C] transition-all duration-300 shadow-lg hover:shadow-xl text-base"
             >
               Get Started Free
             </a>
             <a
               href="#book-demo"
-              className="px-8 py-4 bg-white text-aziron-dark font-semibold rounded-lg border-2 border-aziron-dark hover:bg-aziron-surface transition-all duration-300 text-base"
+              className="px-8 py-4 bg-white text-aziron-dark font-semibold rounded-lg border-2 border-black/10 hover:border-black/20 transition-all duration-300 text-base"
             >
               Book a Demo
             </a>

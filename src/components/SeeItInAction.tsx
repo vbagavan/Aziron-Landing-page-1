@@ -119,7 +119,7 @@ export default function SeeItInAction() {
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
                 {slides[0].title}
               </h2>
-              <p className="text-black/60 text-sm leading-relaxed mb-6">
+              <p className="text-gray-700 text-base leading-relaxed mb-6">
                 {slides[0].description}
               </p>
               <ul className="space-y-3">
@@ -128,7 +128,7 @@ export default function SeeItInAction() {
                     <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
                       <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <p className="text-black/70 text-sm leading-relaxed">{bullet}</p>
+                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
                   </li>
                 ))}
               </ul>
@@ -139,7 +139,7 @@ export default function SeeItInAction() {
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
                 {slides[1].title}
               </h2>
-              <p className="text-black/60 text-sm leading-relaxed mb-6">
+              <p className="text-gray-700 text-base leading-relaxed mb-6">
                 {slides[1].description}
               </p>
               <ul className="space-y-3">
@@ -148,7 +148,7 @@ export default function SeeItInAction() {
                     <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
                       <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <p className="text-black/70 text-sm leading-relaxed">{bullet}</p>
+                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
                   </li>
                 ))}
               </ul>
@@ -159,7 +159,7 @@ export default function SeeItInAction() {
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
                 {slides[2].title}
               </h2>
-              <p className="text-black/60 text-sm leading-relaxed mb-6">
+              <p className="text-gray-700 text-base leading-relaxed mb-6">
                 {slides[2].description}
               </p>
               <ul className="space-y-3">
@@ -168,7 +168,7 @@ export default function SeeItInAction() {
                     <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
                       <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <p className="text-black/70 text-sm leading-relaxed">{bullet}</p>
+                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
                   </li>
                 ))}
               </ul>

@@ -1,7 +1,9 @@
 const STORIES = [
   {
     title: "Incident Root Cause Analysis",
-    gradient: "from-[#0A2540] via-[#0D1B3E] to-[#1E3A8A]",
+    gradient: "from-orange-50 via-amber-50 to-orange-100",
+    accentColor: "text-orange-600",
+    badgeBg: "bg-orange-100 text-orange-700",
     stats: [
       { value: "70%", label: "Faster RCA" },
       { value: "3×", label: "faster root cause identification" },
@@ -11,7 +13,9 @@ const STORIES = [
   },
   {
     title: "Employee Onboarding",
-    gradient: "from-aziron-blue via-[#0052CC] to-aziron-sky",
+    gradient: "from-blue-50 via-sky-50 to-blue-100",
+    accentColor: "text-blue-600",
+    badgeBg: "bg-blue-100 text-blue-700",
     stats: [
       { value: "80%", label: "Faster Onboarding" },
       { value: "90%", label: "reduction in manual tasks" },
@@ -21,7 +25,9 @@ const STORIES = [
   },
   {
     title: "SQL Query Generation",
-    gradient: "from-[#7C3AED] via-[#6D28D9] to-[#5B21B6]",
+    gradient: "from-violet-50 via-purple-50 to-violet-100",
+    accentColor: "text-violet-600",
+    badgeBg: "bg-violet-100 text-violet-700",
     stats: [
       { value: "70%", label: "Faster Query Generation" },
       { value: "85%", label: "reduction in query errors" },
@@ -33,20 +39,12 @@ const STORIES = [
 
 export default function UseCases() {
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden" style={{
-      background: "linear-gradient(160deg, #f0f4ff 0%, #ffffff 35%, #fdf4ff 70%, #fff7ed 100%)",
-    }}>
-      {/* Soft radial blobs */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: `
-          radial-gradient(ellipse 55% 40% at 15% 20%, rgba(99,102,241,0.07) 0%, transparent 70%),
-          radial-gradient(ellipse 45% 35% at 85% 75%, rgba(168,85,247,0.06) 0%, transparent 70%),
-          radial-gradient(ellipse 40% 30% at 60% 10%, rgba(59,130,246,0.05) 0%, transparent 70%)
-        `,
-      }} />
+    <section className="relative py-20 lg:py-28 overflow-hidden bg-stone-50">
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         <div className="mb-12 text-center">
+          <p className="text-xs font-semibold tracking-widest uppercase text-orange-500 mb-4">
+            Real Results
+          </p>
           <h2 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl text-aziron-dark mb-4">
             Real Workflows. Real Impact.
           </h2>
@@ -61,34 +59,21 @@ export default function UseCases() {
               key={i}
               className="bg-white rounded-2xl overflow-hidden border border-aziron-border shadow-sm hover:shadow-xl transition-shadow duration-300 group"
             >
-              {/* Image / visual header */}
-              <div className={`relative h-52 bg-gradient-to-br ${story.gradient} overflow-hidden`}>
-                {/* Subtle wave overlay */}
-                <svg
-                  className="absolute inset-0 w-full h-full opacity-10"
-                  viewBox="0 0 400 200"
-                  preserveAspectRatio="xMidYMid slice"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M0,100 Q100,50 200,100 T400,100" stroke="white" strokeWidth="2" fill="none"/>
-                  <path d="M0,130 Q100,80 200,130 T400,130" stroke="white" strokeWidth="1" fill="none" opacity="0.5"/>
-                </svg>
-
-                {/* Glowing orb */}
-                <div className="absolute top-6 right-8 w-28 h-28 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 28 28">
-                      <circle cx="14" cy="14" r="5" stroke="currentColor" strokeWidth="1.8"/>
-                      <path d="M14 4v3M14 21v3M4 14H7M21 14h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                    </svg>
-                  </div>
+              {/* Card header */}
+              <div className={`relative h-44 bg-gradient-to-br ${story.gradient} overflow-hidden border-b border-aziron-border`}>
+                {/* Decorative circles */}
+                <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/40 border border-white/60" />
+                <div className="absolute -top-2 -right-2 w-20 h-20 rounded-full bg-white/30 border border-white/50 flex items-center justify-center">
+                  <svg className={`w-7 h-7 ${story.accentColor}`} fill="none" viewBox="0 0 28 28">
+                    <circle cx="14" cy="14" r="5" stroke="currentColor" strokeWidth="1.8"/>
+                    <path d="M14 4v3M14 21v3M4 14H7M21 14h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
                 </div>
-
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <span className="inline-block bg-white/20 backdrop-blur text-white text-xs font-semibold tracking-wide px-3 py-1 rounded-full mb-2 uppercase">
+                  <span className={`inline-block text-xs font-semibold tracking-wide px-3 py-1 rounded-full mb-2 uppercase ${story.badgeBg}`}>
                     Success Story
                   </span>
-                  <h3 className="font-display font-bold text-white text-xl">{story.title}</h3>
+                  <h3 className="font-display font-bold text-aziron-dark text-xl">{story.title}</h3>
                 </div>
               </div>
 
@@ -110,13 +95,13 @@ export default function UseCases() {
                   <p className="text-aziron-muted text-xs leading-snug">{story.extra.label}</p>
                 </div>
 
-                <p className="text-aziron-text-soft text-sm leading-relaxed mb-5">{story.desc}</p>
+                <p className="text-aziron-text-soft text-base leading-relaxed mb-5">{story.desc}</p>
 
                 <a
                   href="#"
-                  className="inline-flex items-center gap-2 bg-aziron-orange hover:bg-aziron-orange-dark text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors duration-150 group/btn"
+                  className="inline-flex items-center gap-2 bg-aziron-orange hover:bg-aziron-orange-dark text-white font-semibold text-sm px-6 py-2.5 rounded-lg transition-colors duration-150 group/btn"
                 >
-                  READ THE STORY
+                  Read the Story
                   <svg className="w-4 h-4 transition-transform duration-150 group-hover/btn:translate-x-0.5" fill="none" viewBox="0 0 16 16">
                     <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>

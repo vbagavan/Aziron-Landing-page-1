@@ -32,7 +32,7 @@ export default function ProblemStatement() {
   }, [])
 
   return (
-    <section className="min-h-screen flex items-center bg-white relative overflow-hidden">
+    <section className="py-24 md:py-32 bg-white relative overflow-hidden">
       {/* Retro Grid Background */}
       <RetroGrid className="opacity-40" />
       

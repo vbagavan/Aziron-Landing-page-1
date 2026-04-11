@@ -55,7 +55,7 @@ export default function PlatformCapabilities() {
   return (
     <section
       ref={ref}
-      className="relative bg-white text-aziron-dark py-40 overflow-hidden"
+      className="relative bg-white text-aziron-dark py-24 overflow-hidden"
     >
       {/* ===== Background Mesh + Gradient ===== */}
       <div className="absolute inset-0 pointer-events-none">
@@ -71,7 +71,7 @@ export default function PlatformCapabilities() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-32"
+          className="text-center mb-20"
         >
           <p className="text-xs font-semibold uppercase tracking-widest text-orange-500 mb-4">
             Platform Architecture
@@ -116,7 +116,7 @@ export default function PlatformCapabilities() {
           ))}
 
           {/* ===== Nodes ===== */}
-          <div className="space-y-32">
+          <div className="space-y-20">
             {capabilities.map((item, index) => {
               const isLeft = index % 2 === 0
 
@@ -174,7 +174,7 @@ export default function PlatformCapabilities() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mt-40"
+          className="text-center mt-20"
         >
           <p className="text-aziron-muted text-sm tracking-[0.25em] uppercase">
             From AI responses → to real execution

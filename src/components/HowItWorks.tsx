@@ -39,7 +39,7 @@ export default function HowItWorks() {
         <h2 className="font-display text-4xl md:text-5xl font-semibold tracking-tight">
           How Aziron Works
         </h2>
-        <p className="font-sans mt-4 text-black/50 max-w-lg mx-auto">
+        <p className="font-sans mt-4 text-gray-600 max-w-lg mx-auto">
           From intent to execution. A simple continuous system.
         </p>
       </div>
@@ -74,7 +74,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Step label */}
-              <div className="text-[11px] tracking-[0.2em] text-black/40 font-sans">
+              <div className="text-xs font-semibold tracking-widest uppercase text-orange-500 font-sans">
                 {step.label}
               </div>
 
@@ -84,7 +84,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Description */}
-              <p className="mt-2 text-sm text-black/50 leading-relaxed font-sans">
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed font-sans">
                 {step.desc}
               </p>
             </motion.div>
@@ -93,7 +93,7 @@ export default function HowItWorks() {
       </div>
 
       {/* Punchline */}
-      <p className="relative z-10 mt-16 text-center text-base text-black/60 font-sans">
+      <p className="relative z-10 mt-16 text-center text-base text-gray-600 font-sans">
         Not just answers.{" "}
         <span className="text-black font-medium">Real execution.</span>
       </p>

@@ -40,12 +40,6 @@ const LINKS = {
   ],
 };
 
-const CERTIFICATIONS = [
-  { alt: "ISO Logo", width: 100, height: 52 },
-  { alt: "ISO 27001", width: 100, height: 52 },
-  { alt: "Great Place to Work", width: 100, height: 52 },
-  { alt: "Glassdoor Review", width: 100, height: 52 },
-];
 
 function AzironLogo() {
   return (
@@ -133,14 +127,6 @@ export default function Footer() {
             Aziro is an AI-native product engineering company driving innovation-led tech transformation for global enterprises, high-growth ISVs, and AI-first pioneers. We empower organizations to modernize platforms, automate intelligently, and harness AI-driven insights—accelerating innovation, unlocking new revenue streams, and ensuring they lead in an AI-first world.
           </p>
 
-          {/* Certifications */}
-          <div className="w-full max-md:flex-wrap flex gap-5 md:space-x-5 lg:space-x-0 mt-4 justify-between md:justify-start">
-            {CERTIFICATIONS.map((cert, i) => (
-              <div key={i} className="h-15 w-30 max-md:w-18 bg-white/50 rounded-lg flex items-center justify-center border border-gray-200">
-                <span className="text-xs text-gray-400 font-semibold">{cert.alt}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Right - Contact Info */}
