@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-montserrat);
+
+  --color-aziron-dark: #0A2540;
+  --color-aziron-navy: #0D1B3E;
+  --color-aziron-navy-light: #142048;
+  --color-aziron-blue: #0066FF;
+  --color-aziron-sky: #00A3FF;
+  --color-aziron-orange: #F97316;
+  --color-aziron-orange-dark: #EA580C;
+  --color-aziron-surface: #F0F6FF;
+  --color-aziron-surface-2: #F8FAFF;
+  --color-aziron-muted: #4A5568;
+  --color-aziron-border: #E5E9F0;
+  --color-aziron-text: #0A2540;
+  --color-aziron-text-soft: #334155;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Blob drift ── */
+@keyframes blobDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%       { transform: translate(40px, -30px) scale(1.08); }
+  50%       { transform: translate(-30px, 25px) scale(0.92); }
+  75%       { transform: translate(20px, 40px) scale(1.04); }
+}
+
+/* ── Entrance animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(36px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Float loop ── */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+/* ── Progress shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+/* ── Gradient animation ── */
+@keyframes gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Retro grid animation ── */
+@keyframes grid {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+.animate-blob-1 { animation: blobDrift 14s ease-in-out infinite; }
+.animate-blob-2 { animation: blobDrift 18s ease-in-out infinite 5s; }
+.animate-blob-3 { animation: blobDrift 22s ease-in-out infinite 10s; }
+
+.animate-fade-up    { animation: fadeUp     0.8s ease-out both; }
+.animate-slide-right { animation: slideRight 0.8s ease-out both; }
+.animate-float       { animation: floatY     4s   ease-in-out infinite; }
+.animate-gradient    { animation: gradient   3s   ease infinite; }
+.animate-grid        { animation: grid       15s linear infinite; }
+
+/* Stagger helpers */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.35s; }
+.stagger-4 { animation-delay: 0.5s; }
+.stagger-5 { animation-delay: 0.65s; }
+.stagger-6 { animation-delay: 0.8s; }
