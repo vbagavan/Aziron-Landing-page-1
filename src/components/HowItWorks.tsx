@@ -1,102 +1,478 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 
-const steps = [
-  {
+const stages = [
+  { 
+    id: "build", 
     label: "BUILD",
     subtitle: "Create intelligent agents",
     desc: "Connect data, tools, and systems into executable units.",
-    illustration: <BuildIllustration />,
+    logs: [
+      "→ Connecting knowledge sources",
+      "→ Loading vector indexes",
+      "✓ Agents initialized"
+    ],
+    illustration: <BuildIllustration />
   },
-  {
+  { 
+    id: "orchestrate", 
     label: "ORCHESTRATE",
     subtitle: "Design how work flows",
     desc: "Define logic, approvals, and multi-step execution paths.",
-    illustration: <OrchestrateIllustration />,
+    logs: [
+      "→ Mapping workflow logic",
+      "→ Applying approval rules",
+      "✓ Execution graph ready"
+    ],
+    illustration: <OrchestrateIllustration />
   },
-  {
+  { 
+    id: "execute", 
     label: "EXECUTE",
     subtitle: "Turn decisions into actions",
     desc: "Agents trigger APIs, update systems, and complete tasks.",
-    illustration: <ExecuteIllustration />,
+    logs: [
+      "→ Triggering APIs",
+      "→ Updating systems",
+      "✓ Task completed"
+    ],
+    illustration: <ExecuteIllustration />
   },
 ];
 
 export default function HowItWorks() {
+  const [activeStage, setActiveStage] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothMouseX = useSpring(mouseX, { damping: 50, stiffness: 300 });
+  const smoothMouseY = useSpring(mouseY, { damping: 50, stiffness: 300 });
+
+  useEffect(() => {
+    if (isPaused) return;
+    
+    const interval = setInterval(() => {
+      setActiveStage((prev) => (prev + 1) % stages.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
+    const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
+    mouseX.set(x);
+    mouseY.set(y);
+    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
   return (
-    <section className="relative py-24 px-6 bg-white text-black border-t border-black/10 overflow-hidden">
-      {/* Animated radial gradient background */}
-      <div className="absolute inset-0 pointer-events-none">
+    <section 
+      className="relative min-h-screen bg-gradient-to-b from-white via-orange-50/20 to-white text-black flex items-center justify-center overflow-hidden"
+      onMouseMove={handleMouseMove}
+      ref={containerRef}
+    >
+      {/* Sophisticated background layers */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Animated mesh gradient */}
         <motion.div
-          className="w-full h-full bg-[radial-gradient(circle_at_30%_50%,rgba(0,0,0,0.04),transparent_60%)]"
-          animate={{ x: [0, 40, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: "radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.08), transparent 50%), radial-gradient(circle at 70% 80%, rgba(251, 146, 60, 0.06), transparent 50%)",
+            x: smoothMouseX,
+            y: smoothMouseY,
+          }}
         />
+        
+        {/* Noise texture overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Floating orbs */}
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-96 h-96 rounded-full"
+            style={{
+              background: `radial-gradient(circle, rgba(249, 115, 22, ${0.03 + i * 0.01}), transparent 70%)`,
+              filter: "blur(60px)",
+              left: `${20 + i * 30}%`,
+              top: `${30 + i * 20}%`,
+            }}
+            animate={{
+              x: [0, 100, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 15 + i * 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 2,
+            }}
+          />
+        ))}
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        <h2 className="font-display text-4xl md:text-5xl font-semibold tracking-tight">
-          How Aziron Works
-        </h2>
-        <p className="font-sans mt-4 text-gray-600 max-w-lg mx-auto">
-          From intent to execution. A simple continuous system.
-        </p>
-      </div>
-
-      {/* Flow */}
-      <div className="relative z-10 max-w-5xl mx-auto mt-16">{/* Base line — runs through center of 80px icons (top-10 = 40px) */}
-        {/* Base line — runs through center of 80px icons (top-10 = 40px) */}
-        <div className="hidden md:block absolute top-10 left-0 right-0 h-[2px] bg-black/10" />
-
-        {/* Animated line */}
-        <motion.div
-          className="hidden md:block absolute top-10 left-0 h-[2px] bg-black/20"
-          initial={{ width: 0 }}
-          whileInView={{ width: "100%" }}
+      <div className="relative z-10 max-w-7xl w-full px-6 py-24 md:py-32">
+        {/* Header with stagger animation */}
+        <motion.div 
+          className="mb-24 text-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 2.4, ease: "easeInOut" }}
-        />
+          transition={{ duration: 0.8 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight mb-8 bg-gradient-to-br from-black via-black to-black/70 bg-clip-text text-transparent">
+              How Aziron Works
+            </h2>
+          </motion.div>
+          <motion.p 
+            className="font-sans text-xl md:text-2xl text-black/60 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            Real-time execution — not just automation, but action.
+          </motion.p>
+        </motion.div>
 
-        <div className="flex flex-col md:flex-row items-start justify-between gap-14 relative">
-          {steps.map((step, index) => (
+        {/* Premium System Container */}
+        <motion.div 
+          className="relative"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          {/* Glow effect behind container */}
+          <div className="absolute -inset-8 bg-gradient-to-r from-orange-500/10 via-orange-400/5 to-orange-500/10 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          
+          <div className="relative border border-black/[0.08] rounded-[2.5rem] p-6 md:p-12 lg:p-16 bg-white/80 backdrop-blur-2xl shadow-[0_8px_80px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1)] overflow-hidden">
+            {/* Animated connection line */}
+            <div className="hidden lg:block absolute left-16 right-16 top-32 h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+            
             <motion.div
-              key={index}
-              className="flex flex-col items-start text-left flex-1"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-            >
-              {/* Circular icon container sits ON the line */}
-              <div className="mb-6 relative z-10 w-20 h-20 rounded-full bg-white border border-black/10 flex items-center justify-center p-4 shadow-sm">
-                {step.illustration}
-              </div>
+              className="hidden lg:block absolute top-32 h-[2px] bg-gradient-to-r from-orange-500/0 via-orange-500 to-orange-500/0 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+              style={{ left: "4rem" }}
+              animate={{ 
+                width: ["0%", "calc(100% - 8rem)"],
+                opacity: [0, 1, 1, 0]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+                times: [0, 0.1, 0.9, 1]
+              }}
+            />
 
-              {/* Step label */}
-              <div className="text-xs font-semibold tracking-widest uppercase text-orange-500 font-sans">
-                {step.label}
-              </div>
+            {/* Stages Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 relative">
+              {stages.map((stage, index) => {
+                const isActive = index === activeStage;
 
-              {/* Subtitle */}
-              <div className="mt-2 text-base font-medium text-black font-sans">
-                {step.subtitle}
-              </div>
+                return (
+                  <motion.div
+                    key={stage.id}
+                    className="relative flex flex-col group/card"
+                    onHoverStart={() => setIsPaused(true)}
+                    onHoverEnd={() => setIsPaused(false)}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ 
+                      duration: 0.6, 
+                      delay: 0.5 + index * 0.15,
+                      ease: [0.16, 1, 0.3, 1]
+                    }}
+                  >
+                    {/* Premium icon with magnetic effect */}
+                    <motion.div 
+                      className="mb-10 relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-white to-gray-50 border border-black/[0.08] flex items-center justify-center p-5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] mx-auto lg:mx-0 cursor-pointer"
+                      whileHover={{ 
+                        scale: 1.08,
+                        rotate: [0, -5, 5, 0],
+                        transition: { duration: 0.4, ease: "easeOut" }
+                      }}
+                      animate={{
+                        scale: isActive ? 1.12 : 1,
+                        y: isActive ? -4 : 0,
+                      }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 260, 
+                        damping: 20 
+                      }}
+                    >
+                      {/* Animated rings when active */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <>
+                            {[...Array(2)].map((_, i) => (
+                              <motion.div
+                                key={i}
+                                className="absolute inset-0 rounded-full border-2 border-orange-500/40"
+                                initial={{ scale: 1, opacity: 0.6 }}
+                                animate={{ 
+                                  scale: [1, 1.5, 2],
+                                  opacity: [0.6, 0.3, 0]
+                                }}
+                                exit={{ opacity: 0 }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  delay: i * 0.4,
+                                  ease: "easeOut"
+                                }}
+                              />
+                            ))}
+                            <motion.div
+                              className="absolute inset-0 rounded-full bg-orange-500/20 blur-2xl"
+                              layoutId="icon-glow"
+                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            />
+                          </>
+                        )}
+                      </AnimatePresence>
 
-              {/* Description */}
-              <p className="mt-2 text-sm text-gray-600 leading-relaxed font-sans">
-                {step.desc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+                      <div className="relative z-10">
+                        {stage.illustration}
+                      </div>
+                    </motion.div>
+
+                    {/* Stage label */}
+                    <motion.div 
+                      className="text-[0.65rem] font-bold tracking-[0.25em] uppercase mb-4 font-sans text-center lg:text-left"
+                      animate={{
+                        color: isActive ? "rgb(249, 115, 22)" : "rgb(0, 0, 0, 0.4)",
+                      }}
+                    >
+                      {stage.label}
+                    </motion.div>
+
+                    {/* Title */}
+                    <h3 className="text-2xl md:text-3xl font-semibold text-black font-display mb-3 text-center lg:text-left leading-tight">
+                      {stage.subtitle}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-base text-black/50 leading-relaxed font-sans mb-8 text-center lg:text-left">
+                      {stage.desc}
+                    </p>
+
+                    {/* Terminal logs card */}
+                    <motion.div 
+                      className="relative p-6 lg:p-7 rounded-2xl border overflow-hidden mt-auto"
+                      animate={{
+                        borderColor: isActive 
+                          ? "rgba(249, 115, 22, 0.2)" 
+                          : "rgba(0,0,0,0.06)",
+                        backgroundColor: isActive 
+                          ? "rgba(255, 255, 255, 1)" 
+                          : "rgba(249, 250, 251, 0.5)"
+                      }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      {/* Gradient overlay when active */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.03] via-transparent to-orange-400/[0.02]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.6 }}
+                          />
+                        )}
+                      </AnimatePresence>
+
+                      {/* Terminal header */}
+                      <div className="flex items-center gap-1.5 mb-5 relative z-10">
+                        {[0, 1, 2].map((i) => (
+                          <motion.div 
+                            key={i}
+                            className="w-2.5 h-2.5 rounded-full"
+                            animate={{
+                              backgroundColor: isActive 
+                                ? ["#EF4444", "#F59E0B", "#10B981"][i]
+                                : "#D1D5DB"
+                            }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Logs with typing effect */}
+                      <div className="space-y-3.5 text-[13px] font-mono relative z-10">
+                        {stage.logs.map((log, i) => {
+                          const isCheckmark = log.startsWith("✓");
+                          const cleanLog = log.replace(/^[→✓]\s*/, "");
+                          
+                          return (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ 
+                                opacity: isActive ? 1 : 0.35, 
+                                x: 0,
+                              }}
+                              transition={{ 
+                                delay: isActive ? i * 0.4 : 0,
+                                duration: 0.4,
+                                ease: [0.16, 1, 0.3, 1]
+                              }}
+                              className="flex items-start gap-3"
+                            >
+                              {/* Icon */}
+                              <motion.span 
+                                className="flex-shrink-0 mt-0.5"
+                                animate={{
+                                  color: isActive 
+                                    ? (isCheckmark ? "#10B981" : "#F97316")
+                                    : "#9CA3AF"
+                                }}
+                              >
+                                {isCheckmark ? (
+                                  <motion.span
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ 
+                                      scale: isActive ? 1 : 0.8,
+                                      rotate: isActive ? 0 : -180
+                                    }}
+                                    transition={{ 
+                                      delay: isActive ? i * 0.4 + 0.3 : 0,
+                                      type: "spring",
+                                      stiffness: 400,
+                                      damping: 15
+                                    }}
+                                  >
+                                    ✓
+                                  </motion.span>
+                                ) : "→"}
+                              </motion.span>
+
+                              {/* Text with typing reveal */}
+                              <motion.span
+                                className="leading-relaxed"
+                                animate={{
+                                  color: isActive ? "#171717" : "#6B7280"
+                                }}
+                              >
+                                {isActive ? (
+                                  <motion.span
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ 
+                                      delay: i * 0.4 + 0.1,
+                                      duration: 0.3
+                                    }}
+                                  >
+                                    {cleanLog}
+                                  </motion.span>
+                                ) : cleanLog}
+                              </motion.span>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Progress indicator for active stage */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-orange-400 rounded-b-2xl"
+                            initial={{ scaleX: 0, originX: 0 }}
+                            animate={{ scaleX: 1 }}
+                            exit={{ scaleX: 0 }}
+                            transition={{ duration: 4, ease: "linear" }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Premium stage indicators */}
+            <div className="flex justify-center items-center gap-4 mt-16">
+              {stages.map((stage, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setActiveStage(index);
+                    setIsPaused(true);
+                    setTimeout(() => setIsPaused(false), 6000);
+                  }}
+                  className="group relative flex items-center gap-3 px-4 py-2.5 rounded-full transition-all duration-300 hover:bg-black/[0.02]"
+                >
+                  <motion.div
+                    className="relative w-2 h-2 rounded-full"
+                    animate={{
+                      backgroundColor: index === activeStage 
+                        ? "rgb(249, 115, 22)" 
+                        : "rgba(0,0,0,0.15)",
+                      scale: index === activeStage ? 1 : 0.85
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {index === activeStage && (
+                      <motion.div
+                        layoutId="active-dot-glow"
+                        className="absolute inset-0 rounded-full bg-orange-500 blur-md opacity-60"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </motion.div>
+                  
+                  <motion.span 
+                    className="text-xs font-medium hidden md:block"
+                    animate={{
+                      color: index === activeStage ? "rgb(249, 115, 22)" : "rgba(0,0,0,0.3)",
+                      opacity: index === activeStage ? 1 : 0.6
+                    }}
+                  >
+                    {stage.label}
+                  </motion.span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Punchline */}
+        <motion.p 
+          className="relative z-10 mt-20 text-center text-lg md:text-xl text-black/60 font-sans"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          Not just answers.{" "}
+          <span className="text-black font-semibold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+            Real execution.
+          </span>
+        </motion.p>
       </div>
-
-      {/* Punchline */}
-      <p className="relative z-10 mt-16 text-center text-base text-gray-600 font-sans">
-        Not just answers.{" "}
-        <span className="text-black font-medium">Real execution.</span>
-      </p>
     </section>
   );
 }

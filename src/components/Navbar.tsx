@@ -54,9 +54,11 @@ export default function Navbar() {
         <ul className="hidden lg:flex items-center gap-7">
           {NAV_LINKS.map((link) => (
             <li key={link.label}>
-              <button className="flex items-center gap-1 text-aziron-text-soft hover:text-aziron-dark text-sm font-medium transition-colors duration-150">
+              <button className="group relative flex items-center gap-1 text-aziron-text-soft hover:text-aziron-dark text-sm font-medium transition-all duration-200 focus-visible:outline-orange-500 focus-visible:outline-offset-4 rounded px-2 py-1">
                 {link.label}
                 {link.dropdown && <ChevronDown />}
+                {/* Underline animation */}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300" />
               </button>
             </li>
           ))}
@@ -65,14 +67,14 @@ export default function Navbar() {
         {/* Desktop CTA */}
         <a
           href="#contact"
-          className="hidden lg:inline-flex items-center bg-aziron-orange hover:bg-aziron-orange-dark text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors duration-150"
+          className="hidden lg:inline-flex items-center bg-aziron-orange text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-all duration-200 hover:bg-aziron-orange-dark hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus-visible:outline-orange-500 focus-visible:outline-offset-4"
         >
           Contact
         </a>
 
         {/* Mobile toggle */}
         <button
-          className="lg:hidden text-aziron-dark p-1"
+          className="lg:hidden text-aziron-dark p-2 rounded hover:bg-gray-100 transition-colors focus-visible:outline-orange-500 focus-visible:outline-offset-2"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle navigation"
         >
@@ -99,7 +101,7 @@ export default function Navbar() {
           {NAV_LINKS.map((link) => (
             <button
               key={link.label}
-              className="flex w-full items-center justify-between text-aziron-text-soft hover:text-aziron-dark text-sm font-medium py-2.5 border-b border-aziron-border last:border-0 transition-colors"
+              className="flex w-full items-center justify-between text-aziron-text-soft hover:text-aziron-dark hover:bg-orange-50 text-sm font-medium py-2.5 px-3 rounded border-b border-aziron-border last:border-0 transition-all focus-visible:outline-orange-500 focus-visible:outline-offset-2"
             >
               {link.label}
               {link.dropdown && <ChevronDown />}
@@ -107,7 +109,7 @@ export default function Navbar() {
           ))}
           <a
             href="#contact"
-            className="block w-full text-center bg-aziron-orange hover:bg-aziron-orange-dark text-white font-semibold text-sm px-5 py-3 rounded-lg transition-colors mt-4"
+            className="block w-full text-center bg-aziron-orange text-white font-semibold text-sm px-5 py-3 rounded-lg transition-all mt-4 hover:bg-aziron-orange-dark hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-orange-500 focus-visible:outline-offset-4"
           >
             Contact
           </a>

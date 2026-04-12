@@ -1,23 +1,22 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring, useReducedMotion } from 'framer-motion'
 
 type Slide = {
   type: 'video' | 'image'
   src: string
-  logo: string
   tabTitle: string
   title: string
   description: string
   bullets: string[]
+  accentColor: string
 }
 
 const slides: Slide[] = [
   {
     type: 'video',
     src: '/fusion-x-demo.mp4',
-    logo: 'https://cdn.simpleicons.org/visualstudiocode/ffffff',
     tabTitle: 'Fusion X',
     title: 'Fusion X — VS Code Plugin for Code & Test Automation',
     description: 'Supercharge your development workflow with AI-assisted code generation, automated testing, and intelligent refactoring directly inside VS Code.',
@@ -26,11 +25,11 @@ const slides: Slide[] = [
       'One-click test generation for any function or class',
       'Smart refactoring with impact analysis across the codebase',
     ],
+    accentColor: '#60a5fa',
   },
   {
     type: 'video',
     src: '/incident-rca-demo.mp4',
-    logo: 'https://cdn.simpleicons.org/pagerduty/ffffff',
     tabTitle: 'Incident RCA',
     title: 'AI Powered Incident Handling & Root Cause Analysis (RCA)',
     description: 'Detect, triage, and resolve incidents at machine speed — with AI agents that trace root causes and orchestrate remediation end-to-end.',
@@ -39,11 +38,11 @@ const slides: Slide[] = [
       'AI-generated RCA reports with step-by-step evidence',
       'Auto-remediation playbooks triggered on incident detection',
     ],
+    accentColor: '#f97316',
   },
   {
     type: 'image',
     src: '/enterprise-rag-demo.png',
-    logo: 'https://cdn.simpleicons.org/elasticsearch/ffffff',
     tabTitle: 'Enterprise RAG',
     title: 'RAG for Querying Enterprise Documents Using Gen AI',
     description: 'Unlock the knowledge locked in your enterprise documents — ask questions in natural language and get precise, cited answers powered by Retrieval-Augmented Generation.',
@@ -52,187 +51,211 @@ const slides: Slide[] = [
       'Grounded responses with source citations for every answer',
       'Fine-grained access controls ensure data privacy at all times',
     ],
+    accentColor: '#a78bfa',
   },
 ]
 
 export default function SeeItInAction() {
-  const ref = useRef(null)
+  const ref     = useRef(null)
+  const reduced = useReducedMotion()
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end end'],
   })
 
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 60,
-    damping: 20,
-  })
+  const smooth = useSpring(scrollYProgress, { stiffness: 60, damping: 20 })
 
-  /* ----------------------------------- */
-  /* CLEAN NON-OVERLAPPING SLIDE RANGES  */
-  /* Scroll divided into thirds:         */
-  /*  Slide 1: 0.00 – 0.33              */
-  /*  Slide 2: 0.33 – 0.66              */
-  /*  Slide 3: 0.66 – 1.00              */
-  /* ----------------------------------- */
+  /* Slide transitions — same clean non-overlapping thirds */
+  const fusionOpacity   = useTransform(smooth, [0, 0.28, 0.36],         [1, 1, 0])
+  const incidentOpacity = useTransform(smooth, [0.36, 0.44, 0.56, 0.64],[0, 1, 1, 0])
+  const ragOpacity      = useTransform(smooth, [0.64, 0.72],             [0, 1])
+  const incidentY       = useTransform(smooth, [0.36, 0.44],             [30, 0])
+  const ragY            = useTransform(smooth, [0.64, 0.72],             [30, 0])
 
-  // Slide 1 — Fusion X: visible 0→0.28, fade out 0.28→0.36
-  const fusionOpacity = useTransform(smooth, [0, 0.28, 0.36], [1, 1, 0])
+  /* Title transitions */
+  const title1Opacity = useTransform(smooth, [0, 0.28, 0.36],         [1, 1, 0])
+  const title2Opacity = useTransform(smooth, [0.36, 0.44, 0.56, 0.64],[0, 1, 1, 0])
+  const title3Opacity = useTransform(smooth, [0.64, 0.72],             [0, 1])
 
-  // Slide 2 — Incident RCA: fade in 0.36→0.44, hold, fade out 0.56→0.64
-  const incidentOpacity = useTransform(smooth, [0.36, 0.44, 0.56, 0.64], [0, 1, 1, 0])
-  const incidentEnterY = useTransform(smooth, [0.36, 0.44], [20, 0])
+  /* Container enter */
+  const containerScale = useTransform(smooth, [0, 0.15], [0.96, 1])
+  const containerY     = useTransform(smooth, [0, 0.15], [30, 0])
 
-  // Slide 3 — Enterprise RAG: fade in 0.64→0.72, hold to end
-  const ragOpacity = useTransform(smooth, [0.64, 0.72], [0, 1])
-  const ragEnterY = useTransform(smooth, [0.64, 0.72], [20, 0])
+  /* Background parallax (outer layer, 0.15x) */
+  const bgY = useTransform(scrollYProgress, [0,1], reduced ? ["0%","0%"] : ["-10%","10%"])
 
-  /* AI PULSE EFFECT */
-  const pulseOpacity = useTransform(smooth, [0.42, 0.55], [0, 1])
-
-  /* CAMERA ZOOM */
-  const containerScale = useTransform(smooth, [0, 1], [0.97, 1])
-  const containerY = useTransform(smooth, [0, 1], [40, 0])
-
-  /* TITLE TRANSITIONS — mirror media transitions exactly */
-  const title1Opacity = useTransform(smooth, [0, 0.28, 0.36], [1, 1, 0])
-  const title2Opacity = useTransform(smooth, [0.36, 0.44, 0.56, 0.64], [0, 1, 1, 0])
-  const title3Opacity = useTransform(smooth, [0.64, 0.72], [0, 1])
+  /* Active slide accent colour */
+  const activeSlide = useTransform(smooth, [0, 0.36, 0.64, 1], [0, 1, 2, 2])
 
   return (
-    <section ref={ref} className="h-[400vh] bg-[#F6F6F3] relative">
-      <div className="sticky top-0 h-screen flex items-center justify-between px-20 gap-16">
+    <section
+      ref={ref}
+      className="relative bg-white"
+      style={{ height: "400vh" }}
+    >
+      {/* ── LAYER 1: Background parallax orbs ── */}
+      <motion.div
+        style={{ y: bgY }}
+        className="sticky top-0 h-screen absolute inset-0 pointer-events-none gpu-layer overflow-hidden"
+      >
+        <div
+          className="absolute top-[10%] left-[-5%] w-[500px] h-[500px] rounded-full opacity-40"
+          style={{ background:"radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)", filter:"blur(80px)", animation:"nebulaDrift 25s ease-in-out infinite" }}
+        />
+        <div
+          className="absolute bottom-[15%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-40"
+          style={{ background:"radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%)", filter:"blur(80px)", animation:"blobDrift 20s ease-in-out infinite 5s" }}
+        />
+        {/* Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:"linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px)",
+            backgroundSize:"72px 72px",
+          }}
+        />
+      </motion.div>
 
-        {/* LEFT SIDE — TITLES & DESCRIPTIONS */}
-        <div className="w-[30%] flex-shrink-0 z-10">
+      {/* ── Sticky panel ── */}
+      <div className="sticky top-0 h-screen flex items-center justify-between px-8 md:px-16 lg:px-20 gap-12 z-10">
 
-          {/* Section Label */}
-          <p className="text-xs font-semibold uppercase tracking-widest text-orange-500 mb-6">
+        {/* LEFT — titles */}
+        <div className="w-full md:w-[35%] flex-shrink-0">
+          <motion.p
+            className="text-[11px] font-semibold uppercase tracking-[0.25em] text-orange-600 mb-8"
+            initial={{ opacity:0, x:-20 }}
+            whileInView={{ opacity:1, x:0 }}
+            viewport={{ once:true }}
+            transition={{ duration:0.6 }}
+          >
             Platform Capabilities
-          </p>
+          </motion.p>
 
-          {/* Stacked text panels — relative container holds absolute children */}
-          <div className="relative min-h-[320px]">
+          {/* Tab indicators */}
+          <div className="flex gap-4 mb-16">
+            {slides.map((s, i) => (
+              <motion.div
+                key={i}
+                className="h-0.5 rounded-full flex-1 transition-all duration-500"
+                style={{ background: s.accentColor, opacity: 0.25 }}
+              />
+            ))}
+          </div>
 
-            {/* SLIDE 1: Fusion X */}
-            <motion.div style={{ opacity: title1Opacity }} className="absolute inset-0 w-full">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
-                {slides[0].title}
-              </h2>
-              <p className="text-gray-700 text-base leading-relaxed mb-6">
-                {slides[0].description}
-              </p>
-              <ul className="space-y-3">
-                {slides[0].bullets.map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
-                      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* SLIDE 2: Incident RCA */}
-            <motion.div style={{ opacity: title2Opacity }} className="absolute inset-0 w-full">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
-                {slides[1].title}
-              </h2>
-              <p className="text-gray-700 text-base leading-relaxed mb-6">
-                {slides[1].description}
-              </p>
-              <ul className="space-y-3">
-                {slides[1].bullets.map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
-                      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* SLIDE 3: Enterprise RAG */}
-            <motion.div style={{ opacity: title3Opacity }} className="absolute inset-0 w-full">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-black mb-4 leading-snug">
-                {slides[2].title}
-              </h2>
-              <p className="text-gray-700 text-base leading-relaxed mb-6">
-                {slides[2].description}
-              </p>
-              <ul className="space-y-3">
-                {slides[2].bullets.map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <svg className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 16 16">
-                      <path d="M3 8l3.5 3.5L13 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <p className="text-gray-700 text-base leading-relaxed">{bullet}</p>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
+          <div className="relative min-h-[360px]">
+            {slides.map((slide, i) => {
+              const opacity = [title1Opacity, title2Opacity, title3Opacity][i]
+              return (
+                <motion.div
+                  key={i}
+                  style={{ opacity, pointerEvents: "none" }}
+                  className="absolute inset-0 w-full"
+                >
+                  <div
+                    className="inline-block text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-8 border"
+                    style={{
+                      color: slide.accentColor,
+                      background: `${slide.accentColor}15`,
+                      borderColor: `${slide.accentColor}30`,
+                    }}
+                  >
+                    {slide.tabTitle}
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-aziron-dark mb-8 leading-snug">
+                    {slide.title}
+                  </h2>
+                  <p className="text-aziron-text-soft text-lg leading-relaxed mb-8 max-w-xl">
+                    {slide.description}
+                  </p>
+                  <ul className="space-y-6">
+                    {slide.bullets.map((b, j) => (
+                      <li key={j} className="flex items-start gap-3">
+                        <div
+                          className="w-5 h-5 rounded-full flex-shrink-0 mt-1 flex items-center justify-center"
+                          style={{ background: `${slide.accentColor}20` }}
+                        >
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 10 10">
+                            <path d="M2 5l2.5 2.5L8 3" stroke={slide.accentColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                        <p className="text-aziron-text-soft text-base leading-relaxed max-w-md">{b}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
 
-        {/* RIGHT SIDE — MEDIA CONTAINER */}
+        {/* RIGHT — media container */}
         <motion.div
           style={{ scale: containerScale, y: containerY }}
-          className="relative w-[70%] h-[75vh] bg-white border border-black/10 rounded-2xl shadow-2xl overflow-hidden"
+          className="hidden md:block relative w-[65%] h-[75vh] rounded-2xl overflow-hidden"
+          aria-hidden="true"
+          role="presentation"
         >
-          
-          {/* AI PULSE EFFECT */}
-          <motion.div
-            style={{ opacity: pulseOpacity }}
-            className="absolute inset-0 bg-[radial-gradient(circle,rgba(255,140,0,0.12),transparent_70%)] pointer-events-none z-10"
+          {/* Glass frame */}
+          <div
+            className="absolute inset-0 rounded-2xl"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(4px)",
+              zIndex: 20,
+              pointerEvents: "none",
+            }}
           />
 
-          {/* FUSION X — VIDEO */}
-          <motion.div
-            style={{ opacity: fusionOpacity }}
-            className="absolute inset-0"
-          >
-            <video
-              src={slides[0].src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
+          {/* Glow rim */}
+          <div
+            className="absolute -inset-px rounded-2xl opacity-30 pointer-events-none z-20"
+            style={{ boxShadow:"inset 0 0 40px rgba(37,99,235,0.15)" }}
+          />
+
+          {/* Corner accents */}
+          {['top-0 left-0','top-0 right-0','bottom-0 left-0','bottom-0 right-0'].map((pos, i) => (
+            <div
+              key={i}
+              className={`absolute ${pos} w-6 h-6 border-2 z-30 pointer-events-none`}
+              style={{
+                borderColor: "rgba(56,189,248,0.4)",
+                borderRadius: i === 0 ? "12px 0 0 0" : i === 1 ? "0 12px 0 0" : i === 2 ? "0 0 0 12px" : "0 0 12px 0",
+                borderRight: i === 0 || i === 2 ? "none" : undefined,
+                borderLeft:  i === 1 || i === 3 ? "none" : undefined,
+                borderBottom:i === 0 || i === 1 ? "none" : undefined,
+                borderTop:   i === 2 || i === 3 ? "none" : undefined,
+              }}
             />
+          ))}
+
+          {/* FUSION X — video */}
+          <motion.div style={{ opacity: fusionOpacity }} className="absolute inset-0">
+            <video src={slides[0].src} autoPlay muted loop playsInline className="w-full h-full object-cover" />
           </motion.div>
 
-          {/* INCIDENT RCA — VIDEO */}
-          <motion.div
-            style={{ opacity: incidentOpacity, y: incidentEnterY }}
-            className="absolute inset-0"
-          >
-            <video
-              src={slides[1].src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            />
+          {/* INCIDENT RCA — video */}
+          <motion.div style={{ opacity: incidentOpacity, y: incidentY }} className="absolute inset-0">
+            <video src={slides[1].src} autoPlay muted loop playsInline className="w-full h-full object-cover" />
           </motion.div>
 
-          {/* ENTERPRISE RAG — IMAGE */}
-          <motion.div
-            style={{ opacity: ragOpacity, y: ragEnterY }}
-            className="absolute inset-0"
-          >
-            <img
-              src={slides[2].src}
-              alt={slides[2].title}
-              className="w-full h-full object-cover"
-            />
+          {/* ENTERPRISE RAG — image */}
+          <motion.div style={{ opacity: ragOpacity, y: ragY }} className="absolute inset-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={slides[2].src} alt={slides[2].title} className="w-full h-full object-cover" />
           </motion.div>
 
-          {/* Subtle bottom gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+          {/* Scan line overlay */}
+          <motion.div
+            className="absolute left-0 right-0 h-px pointer-events-none z-20"
+            style={{ background:"linear-gradient(to right, transparent, rgba(56,189,248,0.3), transparent)" }}
+            animate={{ y:["-2%","102%"] }}
+            transition={{ duration:4, repeat:Infinity, ease:"linear", repeatDelay:2 }}
+          />
+
+          {/* Bottom gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
         </motion.div>
       </div>
     </section>

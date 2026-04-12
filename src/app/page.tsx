@@ -14,9 +14,9 @@ export default function Home() {
     <main className="font-sans bg-white">
       <Navbar />
       <Hero />
+      <ProblemStatement />
       <HowItWorks />
       <SeeItInAction />
-      <ProblemStatement />
       <PlatformCapabilities />
       <UseCases />
       <Differentiators />

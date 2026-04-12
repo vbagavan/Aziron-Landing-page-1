@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, DM_Sans } from "next/font/google";
 import "./globals.css";
+import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -25,8 +26,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${montserrat.variable} ${dmSans.variable}`}>
-      <body className="min-h-full antialiased bg-white text-[#0F172A]">
-        {children}
+      <body className="min-h-full antialiased bg-white text-aziron-dark">
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
   );

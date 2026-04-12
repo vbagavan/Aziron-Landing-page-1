@@ -1,319 +1,534 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
+/* ─── Demo data ─────────────────────────────────────── */
+const DEMO_PROMPT =
+  "Analyze production logs, generate RCA, and auto-remediate latency spike";
+
+const STAGES = [
+  {
+    id: "ingest",
+    label: "Ingest",
+    icon: "↓",
+    status: [
+      "Opening stream…",
+      "Loading 3,247 logs…",
+      "Ingestion complete",
+    ],
+  },
+  {
+    id: "analyze",
+    label: "Analyze",
+    icon: "◎",
+    status: [
+      "Scanning services…",
+      "Signal correlation…",
+      "Root cause found",
+    ],
+  },
+  {
+    id: "orchestrate",
+    label: "Orchestrate",
+    icon: "⇄",
+    status: [
+      "Querying Grafana…",
+      "Checking deploys…",
+      "Plan ready",
+    ],
+  },
+  {
+    id: "execute",
+    label: "Execute",
+    icon: "▶",
+    status: [
+      "Rolling back…",
+      "Health checks…",
+      "All systems go",
+    ],
+  },
+];
+
+const RESULTS = [
+  { label: "Root cause",  value: "Config drift in edge proxy", highlight: false },
+  { label: "Latency",     value: "2.4s → 180ms",              highlight: true  },
+  { label: "Resolution",  value: "Auto-remediated",            highlight: true  },
+  { label: "Time to fix", value: "47 seconds",                 highlight: false },
+];
+
+const TRUST = [
+  {
+    label: "SOC 2 Type II",
+    svg: (
+      <path
+        d="M7 1L8.5 5.5H13L9.25 8.25L10.75 12.75L7 10L3.25 12.75L4.75 8.25L1 5.5H5.5L7 1Z"
+        stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"
+      />
+    ),
+  },
+  {
+    label: "RBAC + SSO",
+    svg: (
+      <>
+        <rect x="2" y="5" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+        <path d="M4.5 5V3.5A2.5 2.5 0 0 1 9.5 3.5V5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </>
+    ),
+  },
+  {
+    label: "99.9% Uptime SLA",
+    svg: (
+      <>
+        <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.2"/>
+        <path d="M4.5 7L6.5 9L9.5 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </>
+    ),
+  },
+  {
+    label: "BYOK support",
+    svg: (
+      <>
+        <path d="M2 7C2 4.24 4.24 2 7 2C9.76 2 12 4.24 12 7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+        <path d="M7 12V9M5 10.5L7 12L9 10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      </>
+    ),
+  },
+];
+
+/* ─── Typewriter hook ───────────────────────────────── */
+function useTypewriter(text: string, speed = 26, active = true) {
+  const [out, setOut] = useState("");
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!active) { setOut(""); setDone(false); return; }
+    let i = 0; setOut(""); setDone(false);
+    const t = setInterval(() => {
+      i++;
+      setOut(text.slice(0, i));
+      if (i >= text.length) { clearInterval(t); setDone(true); }
+    }, speed);
+    return () => clearInterval(t);
+  }, [text, speed, active]);
+  return { out, done };
+}
+
+/* ─── Component ─────────────────────────────────────── */
 export default function Hero() {
+  const [phase, setPhase] = useState<"idle" | "typing" | "running" | "done">("idle");
+  const [tick, setTick]   = useState(0);
+  const tickRef           = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasAutoPlayed     = useRef(false);
+
+  const startRun = useCallback(() => { setPhase("typing"); setTick(0); }, []);
+
+  /* auto-play once on mount */
+  useEffect(() => {
+    if (!hasAutoPlayed.current) {
+      hasAutoPlayed.current = true;
+      const t = setTimeout(startRun, 900);
+      return () => clearTimeout(t);
+    }
+  }, [startRun]);
+
+  const { out: typed, done: typingDone } = useTypewriter(
+    DEMO_PROMPT, 26,
+    phase === "typing" || phase === "running" || phase === "done",
+  );
+
+  useEffect(() => {
+    if (typingDone && phase === "typing") {
+      const t = setTimeout(() => setPhase("running"), 500);
+      return () => clearTimeout(t);
+    }
+  }, [typingDone, phase]);
+
+  const totalTicks = STAGES.reduce((a, s) => a + s.status.length, 0);
+
+  useEffect(() => {
+    if (phase !== "running") return;
+    tickRef.current = setInterval(() => setTick(v => v + 1), 1300);
+    return () => { if (tickRef.current) clearInterval(tickRef.current); };
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "running" && tick >= totalTicks + 1) {
+      if (tickRef.current) clearInterval(tickRef.current);
+      setPhase("done");
+    }
+  }, [tick, phase, totalTicks]);
+
+  /* Auto-loop: restart 3 s after reaching "done" */
+  useEffect(() => {
+    if (phase !== "done") return;
+    const t = setTimeout(() => {
+      setPhase("idle");
+      setTick(0);
+      setTimeout(startRun, 400);
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [phase, startRun]);
+
+  const stageData = useMemo(() => {
+    let consumed = 0;
+    return STAGES.map(s => {
+      const localTick  = tick - consumed;
+      const revealed   = Math.max(0, Math.min(s.status.length, localTick));
+      const isActive   = localTick > 0 && localTick <= s.status.length;
+      const isComplete = localTick > s.status.length;
+      consumed += s.status.length;
+      return { ...s, revealed, isActive, isComplete, lines: s.status.slice(0, revealed) };
+    });
+  }, [tick]);
+
+  const progress  = Math.min(1, tick / totalTicks);
+  const isRunning = phase === "running" || phase === "done";
+
+  const handleReplay = () => {
+    if (tickRef.current) clearInterval(tickRef.current);
+    setPhase("idle");
+    setTick(0);
+    setTimeout(startRun, 350);
+  };
+
   return (
-    <section className="relative overflow-hidden pt-36 pb-32 px-6 bg-gradient-to-br from-white via-[#FFF4EC] to-[#FFE4C8] text-black">
-      
-      {/* subtle grid background */}
-      <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,gray_1px,transparent_1px),linear-gradient(to_bottom,gray_1px,transparent_1px)] bg-[size:40px_40px]" />
+    <>
+      {/* Scoped keyframes only used by the demo card */}
+      <style>{`
+        @keyframes hz-blink       { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes hz-dot-pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+        @keyframes hz-statusIn    { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hz-resultIn    { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hz-nodePulse   { 0%,100%{box-shadow:0 0 0 4px rgba(47,111,237,.18)} 50%{box-shadow:0 0 0 7px rgba(47,111,237,.10)} }
+        @keyframes hz-checkIn     { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+        @keyframes hz-outSuccess  { 0%{box-shadow:0 0 0 0 rgba(22,163,74,.2)} 50%{box-shadow:0 0 0 6px rgba(22,163,74,.2)} 100%{box-shadow:0 0 0 0 rgba(22,163,74,.2)} }
 
-      {/* Decorative Floating Shapes */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          className="absolute top-[15%] left-[10%] h-16 w-16 rounded-full bg-blue-200/30 dark:bg-blue-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-[25%] right-[15%] h-12 w-12 rounded-lg bg-purple-200/30 dark:bg-purple-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        />
-        <motion.div
-          className="absolute top-[60%] left-[8%] h-10 w-10 rounded-full bg-cyan-200/30 dark:bg-cyan-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-        <motion.div
-          className="absolute bottom-[20%] right-[12%] h-14 w-14 rounded-lg bg-orange-200/30 dark:bg-orange-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-        />
-        <motion.div
-          className="absolute top-[40%] right-[5%] h-8 w-8 rounded-full bg-green-200/30 dark:bg-green-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-        <motion.div
-          className="absolute bottom-[35%] left-[15%] h-6 w-6 rounded-full bg-pink-200/30 dark:bg-pink-800/20"
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
-        />
-      </div>
+        .hz-cursor       { display:inline-block;width:1.5px;height:14px;background:#2F6FED;margin-left:2px;vertical-align:text-bottom;animation:hz-blink 1s step-end infinite; }
+        .hz-badge-dot    { animation:hz-dot-pulse 2.5s ease-in-out infinite; }
+        .hz-status-in    { animation:hz-statusIn .3s cubic-bezier(.4,0,.2,1) both; }
+        .hz-result-in    { animation:hz-resultIn .4s cubic-bezier(.4,0,.2,1) both; }
+        .hz-node-active  { animation:hz-nodePulse 1.8s ease-in-out infinite; }
+        .hz-node-done    { animation:hz-checkIn .25s cubic-bezier(.4,0,.2,1) both; }
+        .hz-out-success  { animation:hz-outSuccess .4s ease both; }
+      `}</style>
 
-      {/* Minimal Grid with Occasional Pulses */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Grid pulses at key intersections */}
-        <motion.div
-          className="absolute top-[15%] left-[20%] w-3 h-3 rounded-full bg-blue-400/60 blur-sm"
-          animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ 
-            duration: 2.5, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-        />
-        <motion.div
-          className="absolute top-[45%] right-[25%] w-3 h-3 rounded-full bg-purple-400/60 blur-sm"
-          animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ 
-            duration: 2.5, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 0.5
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[30%] left-[35%] w-3 h-3 rounded-full bg-orange-400/60 blur-sm"
-          animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ 
-            duration: 2.5, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 1
-          }}
-        />
-        <motion.div
-          className="absolute top-[60%] right-[15%] w-3 h-3 rounded-full bg-green-400/60 blur-sm"
-          animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ 
-            duration: 2.5, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: 1.5,
-            repeatDelay: 1.5
-          }}
-        />
-      </div>
+      <section className="relative overflow-hidden pt-36 pb-32 px-6 bg-gradient-to-br from-white via-[#FFF4EC] to-[#FFE4C8] text-black">
 
-      {/* soft radial highlight */}
-      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-black/5 blur-[120px]" />
+        {/* grid texture */}
+        <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,gray_1px,transparent_1px),linear-gradient(to_bottom,gray_1px,transparent_1px)] bg-[size:40px_40px]" />
+        {/* radial glow */}
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-black/5 blur-[120px]" />
 
-      <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
 
-        {/* LEFT CONTENT */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* eyebrow */}
-          <div className="text-xs font-semibold tracking-widest uppercase text-orange-500 mb-4">
-            AI-Native Product Engineering
-          </div>
-
-          {/* headline */}
-          <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-7xl font-bold leading-tight tracking-tight">
-            <span className="block whitespace-nowrap">From AI Chat{" "}
-              <svg className="inline-block align-middle mb-1" width="0.75em" height="0.75em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+          {/* ── LEFT ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col gap-6"
+          >
+            {/* eyebrow */}
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.1em] uppercase text-amber-600 bg-amber-50 border border-amber-200/60 px-3.5 py-1.5 rounded-full w-fit">
+              <span className="hz-badge-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+              AI Execution Platform · Beta
             </span>
-            <span className="block">to{" "}<span className="text-[#F97316]">AI Execution</span></span>
-          </h1>
 
-          {/* subtext */}
-          <p className="font-sans mt-6 text-lg text-gray-600 leading-relaxed">
-                        Build agents that don't just respond — but execute real workflows across your systems.
-          </p>
+            {/* headline */}
+            <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-[3.25rem] font-bold leading-[1.07] tracking-[-0.04em]">
+              <span className="block whitespace-nowrap">
+                From AI Chat{" "}
+                <svg
+                  className="inline-block align-middle mb-1"
+                  width="0.75em" height="0.75em"
+                  viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+              <span className="block">
+                to{" "}<span className="text-[#F97316]">AI Execution</span>
+              </span>
+            </h1>
 
-          {/* CTA Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <a
-              href="#get-started"
-              className="font-sans px-8 py-4 bg-[#F97316] text-white font-semibold rounded-lg hover:bg-[#EA580C] transition-all shadow-lg text-center"
-            >
-              Get Started Free
-            </a>
-            <a
-              href="#book-demo"
-              className="font-sans px-8 py-4 bg-white text-black font-semibold rounded-lg border-2 border-black/10 hover:border-black/20 transition-all text-center"
-            >
-              Book a Demo
-            </a>
-          </div>
-        </motion.div>
+            {/* subtext */}
+            <p className="text-[16.5px] leading-[1.68] text-slate-600 max-w-[380px]">
+              Build agents that don&apos;t just respond — but execute real workflows across your systems.
+            </p>
 
-        {/* RIGHT SIDE — Image Collage */}
-        <motion.div
-          className="relative h-[400px] w-full sm:h-[500px]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {/* Connecting lines + animated dots */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <motion.path
-              d="M50,20 Q72,37 85,55"
-              fill="none" stroke="#c4b5fd" strokeWidth="0.5" strokeDasharray="3 2" strokeLinecap="round"
-              animate={{ strokeDashoffset: [0, -10] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.path
-              d="M50,20 Q28,52 18,82"
-              fill="none" stroke="#6ee7b7" strokeWidth="0.5" strokeDasharray="3 2" strokeLinecap="round"
-              animate={{ strokeDashoffset: [0, -10] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.circle r="1.2" fill="#8b5cf6"
-              animate={{ cx: [50, 68, 85], cy: [20, 33, 55] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.circle r="1.2" fill="#10b981"
-              animate={{ cx: [50, 32, 18], cy: [20, 50, 82] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
-          </svg>
-
-          {/* AI Platform card */}
-          <motion.div
-            className="absolute left-1/2 top-0 h-48 w-48 -translate-x-1/2 rounded-2xl bg-white p-2 shadow-2xl sm:h-64 sm:w-64 border border-black/10 z-10"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0, rotate: [-0.6, 0.6, -0.6] }}
-            transition={{
-              opacity: { duration: 0.5, ease: "easeOut" },
-              scale: { duration: 0.5, ease: "easeOut" },
-              y: { duration: 0.5, ease: "easeOut" },
-              rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-            }}
-          >
-            <div className="h-full w-full rounded-xl bg-gradient-to-br from-indigo-50 via-violet-50 to-blue-50 flex flex-col items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <motion.div
-                  className="w-3/4 h-3/4 rounded-full blur-2xl"
-                  style={{ background: "radial-gradient(ellipse, rgba(139,92,246,0.25) 0%, rgba(99,102,241,0.1) 70%, transparent 100%)" }}
-                  animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </div>
-              <motion.div
-                className="relative flex-1 w-full flex items-center justify-center px-5 pt-4"
-                animate={{ y: [0, -7, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href="#get-started"
+                className="px-8 py-4 bg-[#F97316] text-white font-semibold rounded-lg hover:bg-[#EA580C] transition-all shadow-lg text-center"
               >
-                <motion.div
-                  className="w-full h-full"
-                  animate={{ opacity: [0.85, 1, 0.85] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                Get Started Free
+              </a>
+              <a
+                href="#book-demo"
+                className="px-8 py-4 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-all text-center"
+              >
+                Book a Demo
+              </a>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex items-center gap-x-4 gap-y-2 flex-wrap pt-1">
+              {TRUST.map((b, i) => (
+                <div key={b.label} className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                    <svg viewBox="0 0 14 14" fill="none" className="w-3.5 h-3.5 flex-shrink-0">
+                      {b.svg}
+                    </svg>
+                    {b.label}
+                  </div>
+                  {i < TRUST.length - 1 && (
+                    <span className="w-px h-4 bg-slate-200 inline-block" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── RIGHT — Interactive Demo Card ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+            className="flex justify-center"
+          >
+            <div
+              className="w-full max-w-[500px] bg-white border border-gray-200 rounded-2xl overflow-hidden"
+              style={{
+                boxShadow:
+                  "0 1px 0 rgba(255,255,255,.9) inset, 0 24px 48px -12px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.03)",
+              }}
+            >
+              {/* Browser chrome */}
+              <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <span className="w-2 h-2 rounded-full bg-[#FF6259]" />
+                <span className="w-2 h-2 rounded-full bg-[#FFBE2E]" />
+                <span className="w-2 h-2 rounded-full bg-[#2ACB42]" />
+                <span className="ml-2 text-[10.5px] font-medium text-gray-400 tracking-wide">
+                  aziron studio — workflow execution
+                </span>
+              </div>
+
+              <div className="p-4 flex flex-col gap-3.5">
+
+                {/* 1 — Output panel */}
+                <div
+                  className={`rounded-xl overflow-hidden transition-all duration-500 ${
+                    phase === "done" ? "hz-out-success" : ""
+                  }`}
                   style={{
-                    WebkitMaskImage: "url(/ai-brain.svg)",
-                    maskImage: "url(/ai-brain.svg)",
-                    WebkitMaskSize: "contain",
-                    maskSize: "contain",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskPosition: "center",
-                    maskPosition: "center",
-                    background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 45%, #2563eb 100%)",
+                    border:
+                      phase === "done"
+                        ? "1px solid rgba(22,163,74,.3)"
+                        : "1px solid #E3E6EC",
+                    background:
+                      phase === "done" ? "rgba(22,163,74,.03)" : "#F2F4F7",
                   }}
-                />
-              </motion.div>
-              <span className="relative text-sm text-indigo-600 font-semibold z-10 pb-3">AI Platform</span>
+                >
+                  <div
+                    className="flex items-center justify-between px-3.5 py-2.5 border-b"
+                    style={{
+                      borderColor:
+                        phase === "done" ? "rgba(22,163,74,.2)" : "#E3E6EC",
+                    }}
+                  >
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-[0.1em]"
+                      style={{ color: phase === "done" ? "#16A34A" : "#8B8F9E" }}
+                    >
+                      {phase === "done" ? "✓ Resolved" : "Output"}
+                    </span>
+                    {phase === "done" && (
+                      <span className="text-[10px] text-gray-400 animate-pulse">restarting…</span>
+                    )}
+                  </div>
+                  <div className="p-3.5">
+                    {phase === "done" ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {RESULTS.map((r, i) => (
+                          <div
+                            key={r.label}
+                            className="hz-result-in"
+                            style={{ animationDelay: `${i * 0.09}s` }}
+                          >
+                            <div className="text-[10px] text-gray-400 mb-0.5">{r.label}</div>
+                            <div
+                              className="text-[13px] font-semibold"
+                              style={{ color: r.highlight ? "#16A34A" : "#0C0E16" }}
+                            >
+                              {r.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-[12px] text-gray-400 py-1.5">
+                        {phase === "running" ? "Awaiting pipeline completion…" : "Ready"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2 — Pipeline stages */}
+                {isRunning && (
+                  <div className="grid grid-cols-4 relative">
+                    {stageData.map((s, i) => (
+                      <div key={s.id} className="flex flex-col items-center relative px-0.5">
+                        {/* connector */}
+                        {i < STAGES.length - 1 && (
+                          <div
+                            className="absolute top-[17px] h-px z-[1] transition-colors duration-500"
+                            style={{
+                              left: "calc(50% + 17px)",
+                              right: "calc(-50% + 17px)",
+                              background: s.isComplete ? "#16A34A" : "#E3E6EC",
+                            }}
+                          />
+                        )}
+                        {/* node */}
+                        <div
+                          className={`w-[34px] h-[34px] rounded-[9px] flex items-center justify-center text-[13px] font-medium relative z-[2] transition-all duration-300 ${
+                            s.isComplete ? "hz-node-done" : s.isActive ? "hz-node-active" : ""
+                          }`}
+                          style={{
+                            border: s.isComplete
+                              ? "1px solid #16A34A"
+                              : s.isActive
+                              ? "1px solid #2F6FED"
+                              : "1px solid #E3E6EC",
+                            color:  s.isComplete ? "#16A34A" : s.isActive ? "#2F6FED" : "#8B8F9E",
+                            background: s.isComplete
+                              ? "rgba(22,163,74,.08)"
+                              : s.isActive
+                              ? "rgba(47,111,237,.08)"
+                              : "#F2F4F7",
+                          }}
+                        >
+                          {s.isComplete ? "✓" : s.icon}
+                        </div>
+                        {/* stage label */}
+                        <div
+                          className="text-[9.5px] font-semibold tracking-wide mt-2 text-center transition-colors duration-300"
+                          style={{
+                            color: s.isComplete ? "#16A34A" : s.isActive ? "#2F6FED" : "#8B8F9E",
+                          }}
+                        >
+                          {s.label}
+                        </div>
+                        {/* status lines — fixed height keeps all 4 columns even */}
+                        <div className="mt-1.5 text-center h-[52px] overflow-hidden">
+                          {s.lines.map((line, li) => (
+                            <div
+                              key={li}
+                              className="hz-status-in text-[10.5px] leading-[1.55]"
+                              style={{
+                                animationDelay: `${li * 0.07}s`,
+                                color:
+                                  li === s.lines.length - 1 && s.isComplete
+                                    ? "#16A34A"
+                                    : "#4A4E5C",
+                                fontWeight:
+                                  li === s.lines.length - 1 && s.isComplete ? 500 : 400,
+                              }}
+                            >
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 3 — Progress bar */}
+                {isRunning && (
+                  <div className="h-[2px] bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-[width] duration-500 ease-in-out"
+                      style={{
+                        width: `${progress * 100}%`,
+                        background:
+                          phase === "done"
+                            ? "#16A34A"
+                            : "linear-gradient(90deg,#2F6FED,#6366F1)",
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* 4 — Prompt input (bottom — chat-style) */}
+                <div
+                  className="rounded-xl px-3.5 py-3 flex items-end gap-2.5 transition-all duration-300"
+                  style={{
+                    border:
+                      phase === "typing"
+                        ? "1px solid #2F6FED"
+                        : phase === "done"
+                        ? "1px solid #16A34A"
+                        : "1px solid #E3E6EC",
+                    background: phase === "typing" ? "#fff" : "#F2F4F7",
+                    boxShadow:
+                      phase === "typing"
+                        ? "0 0 0 3px rgba(47,111,237,.18)"
+                        : phase === "done"
+                        ? "0 0 0 3px rgba(22,163,74,.2)"
+                        : "none",
+                  }}
+                >
+                  {/* text area */}
+                  <div
+                    className="flex-1 text-[13px] leading-relaxed min-h-[18px]"
+                    style={{ color: phase === "idle" ? "#9CA3AF" : "#111827" }}
+                  >
+                    {phase === "idle" ? (
+                      "Describe your workflow…"
+                    ) : (
+                      <>
+                        {typed}
+                        {phase !== "done" && <span className="hz-cursor" />}
+                      </>
+                    )}
+                  </div>
+                  {/* send button */}
+                  <button
+                    aria-label="Send"
+                    className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300"
+                    style={{
+                      background:
+                        phase === "done"
+                          ? "#16A34A"
+                          : phase === "typing" || phase === "running"
+                          ? "#2F6FED"
+                          : "#E3E6EC",
+                      cursor: "default",
+                    }}
+                  >
+                    <svg
+                      viewBox="0 0 16 16" fill="none"
+                      width="13" height="13"
+                      stroke={phase === "idle" ? "#9CA3AF" : "#fff"}
+                      strokeWidth="1.8"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <path d="M8 13V3M3 8l5-5 5 5" />
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
             </div>
           </motion.div>
 
-          {/* Stat chip — 10x faster */}
-          <motion.div
-            className="absolute left-[5%] top-[40%] z-20 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-md border border-indigo-100 text-xs font-semibold text-indigo-600"
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0, y: [0, -4, 0] }}
-            transition={{ opacity: { delay: 0.9, duration: 0.4 }, x: { delay: 0.9, duration: 0.4 }, y: { duration: 3, repeat: Infinity, ease: "easeInOut" } }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            10x faster
-          </motion.div>
-
-          {/* Aziro logo card */}
-          <motion.div
-            className="absolute right-0 top-1/3 h-40 w-40 rounded-2xl bg-white p-4 shadow-xl sm:h-56 sm:w-56 border border-black/10 flex flex-col items-center justify-center gap-3 z-10"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0, rotate: [0.6, -0.6, 0.6] }}
-            transition={{
-              opacity: { delay: 0.15, duration: 0.5, ease: "easeOut" },
-              scale: { delay: 0.15, duration: 0.5, ease: "easeOut" },
-              y: { delay: 0.15, duration: 0.5, ease: "easeOut" },
-              rotate: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 },
-            }}
-          >
-            <svg viewBox="0 0 500 413" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-auto sm:w-40">
-              <g clipPath="url(#hero-card-clip)">
-                <path d="M292.539 340.837C277.931 329.836 256.263 322.293 234.454 322.293C209.802 322.293 185.492 329.55 157.831 357.286C126.919 387.696 80.2413 413.975 21.1197 412.653C13.9842 412.492 6.93432 412.276 -0.00488281 411.532L33.9967 350.476L34.0017 350.471C55.7402 331.233 80.7998 308.924 90.4563 302.602C106.725 291.968 145.452 265.684 206.737 283.445C210.109 284.425 212.177 285.254 215.835 286.581C244.477 296.979 290.692 338.621 292.534 340.832L292.539 340.837Z" fill="url(#hero-card-g0)"/>
-                <path d="M165.137 220.78C184.681 219.951 202.057 224.127 217.792 231.384C245.272 244.039 266.704 264.8 281.342 280.465C295.688 295.813 318.61 321.433 339.452 340.777C360.109 359.95 394.362 391.782 437.044 409.462C445.835 413.101 447.138 412.573 448.411 413.01C401.684 397.184 365.302 361.211 341.093 339.747C319.812 320.886 299.317 292.094 283.471 276.927C268.475 262.573 248.105 239.657 220.625 226.997C204.89 219.74 186.181 215.026 166.641 215.936C136.696 217.328 101.713 233.882 85.2027 260.628L70.4487 284.369C91.8501 246.813 124.1 222.524 165.137 220.785V220.78Z" fill="#8CF4FC"/>
-                <path d="M500 412.653C396.138 381.007 311.222 260.176 311.222 260.176C311.222 260.176 272.355 196.984 216.896 183.656C210.611 182.148 201.77 180.676 195.4 180.656C153.211 180.505 129.47 197.265 112.074 213.825L174.064 104.668L224.374 16.0669L226.467 12.3831C230.448 6.62876 236.305 0.231157 249.328 0C262.14 -0.221148 269.924 8.49327 272.506 13.0465L274.368 15.705L500 412.653Z" fill="#2463EB"/>
-                <path d="M445.574 412.653C408.699 412.492 378.989 394.822 358.428 385.314C340.348 376.951 313.98 356.296 294.023 342.089C294.013 342.084 242.968 293.34 206.742 283.45C145.19 266.644 106.73 291.968 90.4615 302.607C80.8049 308.93 55.7453 331.233 34.0068 350.476L68.8085 287.028C84.6444 260.171 112.378 223.346 165.132 220.785C184.672 219.837 202.052 224.132 217.788 231.389C245.268 244.044 267.026 265.433 281.337 280.47C296.323 296.21 374.627 389.023 445.569 412.663L445.574 412.653Z" fill="url(#hero-card-g1)"/>
-              </g>
-              <defs>
-                <linearGradient id="hero-card-g0" x1="281.977" y1="381.734" x2="-35.705" y2="407.8" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#3FBDFF"/><stop offset="0.77" stopColor="#1A23C9"/>
-                </linearGradient>
-                <linearGradient id="hero-card-g1" x1="34.0068" y1="316.558" x2="445.574" y2="316.558" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#2F5DF7"/><stop offset="1" stopColor="#5BCDFD"/>
-                </linearGradient>
-                <clipPath id="hero-card-clip">
-                  <rect width="500" height="413" fill="white"/>
-                </clipPath>
-              </defs>
-            </svg>
-          </motion.div>
-
-          {/* Stat chip — 99.9% uptime */}
-          <motion.div
-            className="absolute right-[2%] top-[22%] z-20 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-md border border-blue-100 text-xs font-semibold text-blue-600"
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0, y: [0, -4, 0] }}
-            transition={{ opacity: { delay: 1.1, duration: 0.4 }, x: { delay: 1.1, duration: 0.4 }, y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 } }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            99.9% uptime
-          </motion.div>
-
-          {/* Transform card */}
-          <motion.div
-            className="absolute bottom-0 left-0 h-32 w-32 rounded-2xl bg-white p-2 shadow-xl sm:h-48 sm:w-48 border border-black/10 z-10"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0, rotate: [-0.5, 0.5, -0.5] }}
-            transition={{
-              opacity: { delay: 0.3, duration: 0.5, ease: "easeOut" },
-              scale: { delay: 0.3, duration: 0.5, ease: "easeOut" },
-              y: { delay: 0.3, duration: 0.5, ease: "easeOut" },
-              rotate: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 },
-            }}
-          >
-            <div className="h-full w-full rounded-xl bg-gradient-to-br from-emerald-50 to-cyan-50 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
-              <svg viewBox="0 0 80 80" className="w-12 h-12 sm:w-16 sm:h-16" fill="none">
-                <motion.g
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <line x1="12" y1="30" x2="56" y2="30" stroke="#10b981" strokeWidth="4" strokeLinecap="round"/>
-                  <polyline points="46,20 58,30 46,40" stroke="#10b981" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                </motion.g>
-                <motion.g
-                  animate={{ x: [0, -5, 0] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-                >
-                  <line x1="68" y1="50" x2="24" y2="50" stroke="#06b6d4" strokeWidth="4" strokeLinecap="round"/>
-                  <polyline points="34,40 22,50 34,60" stroke="#06b6d4" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                </motion.g>
-              </svg>
-              <span className="text-xs text-emerald-600 font-semibold">Transform</span>
-            </div>
-          </motion.div>
-
-          {/* Stat chip — 50+ integrations */}
-          <motion.div
-            className="absolute left-[35%] bottom-[8%] z-20 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-md border border-emerald-100 text-xs font-semibold text-emerald-600"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: [0, -4, 0] }}
-            transition={{ opacity: { delay: 1.3, duration: 0.4 }, y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 } }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            50+ integrations
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
