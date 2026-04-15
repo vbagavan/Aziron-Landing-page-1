@@ -130,7 +130,7 @@ export default function PlatformCapabilities() {
             One Platform.<br/>
             <span
               style={{
-                background:'linear-gradient(120deg, #60a5fa, #38bdf8, #f97316)',
+                background:'linear-gradient(120deg, #60a5fa, #f97316)',
                 WebkitBackgroundClip:'text',
                 backgroundClip:'text',
                 WebkitTextFillColor:'transparent',

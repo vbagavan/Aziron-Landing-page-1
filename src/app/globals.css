@@ -283,8 +283,8 @@ body {
 
 /* Aziron gradient text (used by Differentiators) */
 .aziron-grad-text {
-  --grad-end: #2563EB;
-  background: linear-gradient(135deg, #0a2540, var(--grad-end));
+  --grad-end: #00A3FF;
+  background: linear-gradient(135deg, #0066FF, var(--grad-end));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

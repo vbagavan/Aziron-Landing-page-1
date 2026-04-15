@@ -177,8 +177,13 @@ export default function Differentiators() {
           <h2 style={{ fontSize:'clamp(48px,7vw,92px)', lineHeight:1.03, letterSpacing:'-0.035em', fontWeight:600, margin:0, marginBottom:32, color:'#0A2540' }}>
             A System That<br/>
             <span
-              className="aziron-grad-text"
-              style={{ ['--grad-end' as string]: activeColor }}
+              style={{
+                background:'linear-gradient(120deg, #f97316, #60a5fa)',
+                WebkitBackgroundClip:'text',
+                backgroundClip:'text',
+                WebkitTextFillColor:'transparent',
+                color:'transparent',
+              }}
             >
               Executes Intelligence
             </span>
