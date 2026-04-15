@@ -163,26 +163,22 @@ export default function HowItWorks() {
                       <AnimatePresence>
                         {isActive && (
                           <>
-                            {[...Array(2)].map((_, i) => (
-                              <motion.div
-                                key={i}
-                                className="absolute inset-0 rounded-full border-2 border-orange-500/40"
-                                initial={{ scale: 1, opacity: 0.6 }}
-                                animate={{ 
-                                  scale: [1, 1.5, 2],
-                                  opacity: [0.6, 0.3, 0]
-                                }}
-                                exit={{ opacity: 0 }}
-                                transition={{
-                                  duration: 2,
-                                  repeat: Infinity,
-                                  delay: i * 0.4,
-                                  ease: "easeOut"
-                                }}
-                              />
-                            ))}
                             <motion.div
-                              className="absolute inset-0 rounded-full bg-orange-500/20 blur-2xl"
+                              className="absolute inset-0 rounded-full border border-orange-500/25"
+                              initial={{ scale: 1, opacity: 0.3 }}
+                              animate={{
+                                scale: [1, 1.18, 1.32],
+                                opacity: [0.3, 0.14, 0]
+                              }}
+                              exit={{ opacity: 0 }}
+                              transition={{
+                                duration: 2.4,
+                                repeat: Infinity,
+                                ease: "easeOut"
+                              }}
+                            />
+                            <motion.div
+                              className="absolute inset-2 rounded-full bg-orange-500/10 blur-xl"
                               layoutId="icon-glow"
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
