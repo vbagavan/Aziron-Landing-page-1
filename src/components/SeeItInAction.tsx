@@ -88,11 +88,6 @@ export default function SeeItInAction() {
   const s2y = useTransform(smooth, [0.30, 0.42], reduced ? [0, 0] : [52, 0])
   const s3y = useTransform(smooth, [0.64, 0.76], reduced ? [0, 0] : [52, 0])
 
-  // ── Ambient background (same rhythm as content) ──
-  const bg1 = useTransform(smooth, [0, 0.28, 0.36], [1, 1, 0])
-  const bg2 = useTransform(smooth, [0.30, 0.38, 0.62, 0.70], [0, 1, 1, 0])
-  const bg3 = useTransform(smooth, [0.64, 0.74, 1.0], [0, 1, 1])
-
   // ── Frame scale (initial entrance) ──
   const frameScale = useTransform(smooth, [0, 0.10], reduced ? [1, 1] : [0.94, 1])
 
@@ -107,7 +102,6 @@ export default function SeeItInAction() {
   const c3y = useTransform(s3o, [0, 1], reduced ? [0, 0] : [28, 0])
 
   const opacities  = [s1o, s2o, s3o]
-  const bgLayers   = [bg1, bg2, bg3]
   const wmLayers   = [wm1, wm2, wm3]
   const chipYs     = [c1y, c2y, c3y]
   const slideYs    = [undefined, s2y, s3y] as const
@@ -123,23 +117,9 @@ export default function SeeItInAction() {
     <section
       ref={ref}
       className="relative overflow-hidden"
-      style={{ height: '280vh', background: '#0A0A0F' }}
+      style={{ height: '100vh', background: 'linear-gradient(135deg, #0A2540 0%, #0D1B3E 50%, #0A1628 100%)' }}
     >
-      {/* ── AMBIENT COLOR LAYERS ── */}
-      {slides.map((slide, i) => (
-        <motion.div
-          key={i}
-          style={{ opacity: bgLayers[i] }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `radial-gradient(ellipse 75% 60% at 72% 50%, rgba(${slide.accentRGB}, 0.10) 0%, transparent 70%)`,
-            }}
-          />
-        </motion.div>
-      ))}
+
 
       {/* ── NOISE GRAIN OVERLAY ── */}
       <div
