@@ -24,7 +24,7 @@ export default function ProblemStatement() {
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#DDE5F0] text-[#0F172A]"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white text-[#0F172A]"
     >
       {/* Grain */}
       <div
@@ -49,8 +49,8 @@ export default function ProblemStatement() {
       </motion.div>
 
       {/* ── Flow Diagram — larger, more dramatic ── */}
-      <div className="absolute bottom-[28%] left-0 right-0 flex justify-center pointer-events-none">
-        <div className="relative w-[680px] max-w-[90vw] h-[60px]">
+      <div className="absolute bottom-[24%] left-0 right-0 flex justify-center pointer-events-none">
+        <div className="relative w-[800px] max-w-[92vw] h-[80px]">
 
           {/* Labels */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 text-[10px] tracking-[0.35em] font-medium text-slate-400 uppercase">
@@ -213,7 +213,7 @@ export default function ProblemStatement() {
                 {pair.can}
               </motion.div>
 
-              {/* Negative line — muted, delayed */}
+              {/* Negative line — muted, delayed with animated strikethrough */}
               <motion.div
                 initial={{ opacity: 0, x: 16 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -225,7 +225,18 @@ export default function ProblemStatement() {
                   <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.4"/>
                   <path d="M5 5L9 9M9 5L5 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                 </svg>
-                <span className="line-through decoration-orange-300/60">{pair.but}</span>
+                <span className="relative">
+                  {pair.but}
+                  {/* Animated strikethrough line */}
+                  <motion.span
+                    className="absolute left-0 top-1/2 h-[1.5px] bg-orange-400/70 block"
+                    style={{ originX: 0 }}
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true, margin: '-60px' }}
+                    transition={{ duration: 0.5, delay: pi * 0.45 + 0.55, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </span>
               </motion.div>
 
               {/* Divider between pairs */}

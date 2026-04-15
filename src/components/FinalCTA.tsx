@@ -1,4 +1,5 @@
 "use client";
+import { motion } from "framer-motion";
 
 // Aziron-relevant SVG icon components (no external deps)
 const icons = [
@@ -51,10 +52,41 @@ export default function FinalCTA() {
             Production-Ready AI Platform
           </p>
           <h2 className="font-display font-bold text-4xl md:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight text-aziron-dark mb-6">
-            Start Building AI That<br />Actually Works
+            Start Building AI That<br />
+            <motion.span
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="relative inline-block"
+            >
+              <span className="text-[#F97316]">Actually</span>
+              {/* Underline draw-in */}
+              <motion.span
+                className="absolute bottom-0 left-0 h-[3px] bg-[#F97316] rounded-full block"
+                style={{ originX: 0 }}
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </motion.span>{" "}Works
           </h2>
+          {/* Social proof */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex -space-x-2">
+              {["#f97316","#60a5fa","#a78bfa","#34d399"].map((c, i) => (
+                <div key={i} className="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white" style={{ background: c, zIndex: 4 - i }}>
+                  {String.fromCharCode(65 + i)}
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-aziron-muted">
+              <span className="font-semibold text-aziron-dark">200+ teams</span> already executing with Aziron
+            </p>
+          </div>
           <p className="text-aziron-muted text-lg md:text-xl mb-10 max-w-md leading-relaxed">
-            Join teams already using Aziron to deploy production-ready AI agents that connect, execute, and scale.
+            Deploy production-ready AI agents that connect, execute, and scale across your systems.
           </p>
           <div className="flex flex-wrap gap-4">
             <a
@@ -86,7 +118,6 @@ export default function FinalCTA() {
 
             {/* Orbiting rings */}
             {[...Array(ORBIT_COUNT)].map((_, orbitIdx) => {
-              const sizePx = (12 + ORBIT_GAP * (orbitIdx + 1)) * 16; // rem → px approx
               const sizeRem = `${12 + ORBIT_GAP * (orbitIdx + 1)}rem`;
               const angleStep = (2 * Math.PI) / iconsPerOrbit;
               const duration = 22 + orbitIdx * 10;

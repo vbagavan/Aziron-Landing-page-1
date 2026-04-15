@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable react-hooks/refs */
 
 import { useState, useEffect, useRef } from "react"
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion"
@@ -187,7 +188,9 @@ export default function Differentiators() {
           </p>
         </div>
 
-        {/* 3D Tilting Diagram */}
+        {/* 3D Tilting Diagram — responsive wrapper */}
+        <div style={{ width:'100%', overflowX:'hidden', position:'relative', zIndex:2 }}>
+          <div style={{ width:'100%', maxWidth:560, margin:'0 auto' }}>
         <div style={{
           perspective:'1100px', position:'relative', zIndex:2,
           opacity: mounted ? 1 : 0,
@@ -328,6 +331,8 @@ export default function Differentiators() {
             })}
           </div>
         </div>
+        </div>
+        </div>
 
         {/* Stats */}
         <div style={{
@@ -343,6 +348,49 @@ export default function Differentiators() {
             </div>
           ))}
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity:0, y:24 }}
+          whileInView={{ opacity:1, y:0 }}
+          viewport={{ once:true }}
+          transition={{ duration:0.7, ease:[0.16,1,0.3,1] }}
+          style={{ textAlign:'center', position:'relative', zIndex:2, marginTop:64 }}
+        >
+          <p style={{ color:'#475569', fontSize:16, marginBottom:24 }}>
+            Ready to build AI that actually executes?
+          </p>
+          <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
+            <a
+              href="#get-started"
+              style={{
+                display:'inline-flex', alignItems:'center', gap:8,
+                padding:'14px 28px', background:'#F97316', color:'#fff',
+                fontWeight:600, fontSize:14, borderRadius:10,
+                boxShadow:'0 4px 20px rgba(249,115,22,0.35)',
+                textDecoration:'none', transition:'all 0.2s ease',
+              }}
+            >
+              Get Started Free
+              <svg viewBox="0 0 16 16" fill="none" width="14" height="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 8h10M8 3l5 5-5 5"/>
+              </svg>
+            </a>
+            <a
+              href="#book-demo"
+              style={{
+                display:'inline-flex', alignItems:'center', gap:8,
+                padding:'14px 28px', background:'rgba(255,255,255,0.9)', color:'#0A2540',
+                fontWeight:600, fontSize:14, borderRadius:10,
+                border:'1px solid rgba(0,0,0,0.1)',
+                textDecoration:'none', backdropFilter:'blur(8px)',
+                transition:'all 0.2s ease',
+              }}
+            >
+              See a Live Demo
+            </a>
+          </div>
+        </motion.div>
       </div>
 
       {/* Section fade */}

@@ -34,11 +34,29 @@ export default function PlatformCapabilities() {
       className="relative overflow-hidden py-32 md:py-48"
       style={{ background:'linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)' }}
     >
+      {/* Section-scoped side indicators (only visible in this section) */}
+      <div className="hidden xl:flex absolute right-6 top-1/2 -translate-y-1/2 flex-col items-center gap-3 z-20 pointer-events-none">
+        {CAPABILITIES.map((cap, i) => (
+          <div key={cap.title} className="flex flex-col items-center gap-1">
+            <motion.div
+              className="w-1 rounded-full"
+              style={{ height: 36, background: `${cap.color}20` }}
+            >
+              <motion.div
+                className="w-full rounded-full"
+                style={{ background: cap.color, height: '100%', scaleY: scrollYProgress, originY: 0 }}
+              />
+            </motion.div>
+            {i < CAPABILITIES.length - 1 && <div className="h-1" />}
+          </div>
+        ))}
+      </div>
+
       {/* ── LAYER 1: Neuron grid background (slowest) ── */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none gpu-layer">
         {/* Hex/neural grid SVG overlay */}
         <svg
-          className="absolute inset-0 w-full h-full opacity-[0.06]"
+          className="absolute inset-0 w-full h-full opacity-[0.12]"
           xmlns="http://www.w3.org/2000/svg"
           style={{ overflow:'hidden' }}
         >

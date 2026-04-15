@@ -1,7 +1,52 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useScroll, useTransform, useReducedMotion, useInView } from 'framer-motion'
+
+/* ── Count-up hook ── */
+function useCountUp(target: string, duration = 1200) {
+  const [display, setDisplay] = useState('0')
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const reduced = useReducedMotion()
+
+  useEffect(() => {
+    if (!inView || reduced) {
+      setTimeout(() => setDisplay(target), 0)
+      return
+    }
+    // Extract numeric part + suffix (%, ×, etc.)
+    const match = target.match(/^(\d+(?:\.\d+)?)(.*)?$/)
+    if (!match) { setTimeout(() => setDisplay(target), 0); return }
+    const end = parseFloat(match[1])
+    const suffix = match[2] || ''
+    const start = Date.now()
+    const step = () => {
+      const elapsed = Date.now() - start
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      const current = Math.round(eased * end)
+      setDisplay(`${current}${suffix}`)
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [inView, target, duration, reduced])
+
+  return { display, ref }
+}
+
+/* ── Stat with count-up ── */
+function AnimatedStat({ value, label, color }: { value: string; label: string; color: string }) {
+  const { display, ref } = useCountUp(value)
+  return (
+    <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(248,250,252,0.8)', border: '1px solid rgba(15,23,42,0.08)' }}>
+      <p className="font-display font-bold text-3xl" style={{ color }}>
+        <span ref={ref}>{display}</span>
+      </p>
+      <p className="text-aziron-muted text-xs mt-2 leading-snug">{label}</p>
+    </div>
+  )
+}
 
 const STORIES = [
   {
@@ -215,32 +260,19 @@ export default function UseCases() {
 
                 {/* Card body */}
                 <div className="p-8">
-                  {/* Stats */}
+                  {/* Stats — count-up */}
                   <div className="grid grid-cols-2 gap-6 mb-8">
                     {story.stats.map((s, j) => (
-                      <div
-                        key={j}
-                        className="rounded-xl p-4 text-center"
-                        style={{ background:'rgba(248,250,252,0.8)', border:'1px solid rgba(15,23,42,0.08)' }}
-                      >
-                        <p
-                          className="font-display font-bold text-3xl"
-                          style={{ color:story.color }}
-                        >{s.value}</p>
-                        <p className="text-aziron-muted text-xs mt-2 leading-snug">{s.label}</p>
-                      </div>
+                      <AnimatedStat key={j} value={s.value} label={s.label} color={story.color} />
                     ))}
                   </div>
 
-                  {/* Extra stat banner */}
+                  {/* Extra stat banner — count-up */}
                   <div
                     className="flex items-center gap-3 rounded-xl px-4 py-4 mb-8 border"
-                    style={{ background:'rgba(248,250,252,0.6)', borderColor:'rgba(15,23,42,0.08)' }}
+                    style={{ background: 'rgba(248,250,252,0.6)', borderColor: 'rgba(15,23,42,0.08)' }}
                   >
-                    <p className="font-display font-bold text-2xl flex-shrink-0" style={{ color:story.color }}>
-                      {story.extra.value}
-                    </p>
-                    <p className="text-aziron-muted text-xs leading-snug">{story.extra.label}</p>
+                    <AnimatedStat value={story.extra.value} label={story.extra.label} color={story.color} />
                   </div>
 
                   <p className="text-aziron-text-soft text-base leading-relaxed mb-8 max-w-md">{story.desc}</p>

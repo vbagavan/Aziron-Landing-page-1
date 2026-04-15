@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 /* ─── Demo data ─────────────────────────────────────── */
@@ -119,6 +119,12 @@ export default function Hero() {
   const [tick, setTick]   = useState(0);
   const tickRef           = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasAutoPlayed     = useRef(false);
+  const sectionRef        = useRef<HTMLElement>(null);
+
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  const heroTextY  = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
+  const heroCardY  = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   const startRun = useCallback(() => { setPhase("typing"); setTick(0); }, []);
 
@@ -154,7 +160,7 @@ export default function Hero() {
   useEffect(() => {
     if (phase === "running" && tick >= totalTicks + 1) {
       if (tickRef.current) clearInterval(tickRef.current);
-      setPhase("done");
+      setTimeout(() => setPhase("done"), 0);
     }
   }, [tick, phase, totalTicks]);
 
@@ -170,26 +176,20 @@ export default function Hero() {
   }, [phase, startRun]);
 
   const stageData = useMemo(() => {
-    let consumed = 0;
-    return STAGES.map(s => {
-      const localTick  = tick - consumed;
+    const offsets = STAGES.map((_, i) =>
+      STAGES.slice(0, i).reduce((sum, s) => sum + s.status.length, 0)
+    );
+    return STAGES.map((s, i) => {
+      const localTick  = tick - offsets[i];
       const revealed   = Math.max(0, Math.min(s.status.length, localTick));
       const isActive   = localTick > 0 && localTick <= s.status.length;
       const isComplete = localTick > s.status.length;
-      consumed += s.status.length;
       return { ...s, revealed, isActive, isComplete, lines: s.status.slice(0, revealed) };
     });
   }, [tick]);
 
   const progress  = Math.min(1, tick / totalTicks);
   const isRunning = phase === "running" || phase === "done";
-
-  const handleReplay = () => {
-    if (tickRef.current) clearInterval(tickRef.current);
-    setPhase("idle");
-    setTick(0);
-    setTimeout(startRun, 350);
-  };
 
   return (
     <>
@@ -212,7 +212,7 @@ export default function Hero() {
         .hz-out-success  { animation:hz-outSuccess .4s ease both; }
       `}</style>
 
-      <section className="relative overflow-hidden pt-36 pb-32 px-6 bg-gradient-to-br from-white via-[#FFF4EC] to-[#FFE4C8] text-black">
+      <section ref={sectionRef} className="relative overflow-hidden pt-36 pb-32 px-6 bg-gradient-to-br from-white via-[#FFF4EC] to-[#FFE4C8] text-black">
 
         {/* grid texture */}
         <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,gray_1px,transparent_1px),linear-gradient(to_bottom,gray_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -223,35 +223,64 @@ export default function Hero() {
 
           {/* ── LEFT ── */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            style={{ y: heroTextY, opacity: heroOpacity }}
             className="flex flex-col gap-6"
           >
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="flex flex-col gap-6"
+            >
             {/* eyebrow */}
             <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.1em] uppercase text-amber-600 bg-amber-50 border border-amber-200/60 px-3.5 py-1.5 rounded-full w-fit">
               <span className="hz-badge-dot w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
               AI Execution Platform · Beta
             </span>
 
-            {/* headline */}
+            {/* headline — word-stagger */}
             <h1 className="font-display text-[2.6rem] sm:text-5xl md:text-[3.25rem] font-bold leading-[1.07] tracking-[-0.04em]">
-              <span className="block whitespace-nowrap">
-                From AI Chat{" "}
-                <svg
-                  className="inline-block align-middle mb-1"
-                  width="0.75em" height="0.75em"
-                  viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5"
-                  strokeLinecap="round" strokeLinejoin="round"
-                  aria-hidden="true"
+              {["From", "AI", "Chat"].map((word, i) => (
+                <motion.span
+                  key={word}
+                  className="inline-block mr-[0.25em]"
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
                 >
+                  {word}
+                </motion.span>
+              ))}
+              <motion.span
+                className="inline-block mr-[0.25em]"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.35, ease: "backOut" }}
+              >
+                <svg className="inline-block align-middle mb-1" width="0.75em" height="0.75em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
-              </span>
-              <span className="block">
-                to{" "}<span className="text-[#F97316]">AI Execution</span>
-              </span>
+              </motion.span>
+              <br />
+              {["to"].map((word, i) => (
+                <motion.span
+                  key={word}
+                  className="inline-block mr-[0.25em]"
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.45 + i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {word}
+                </motion.span>
+              ))}
+              <motion.span
+                className="text-[#F97316]"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              >
+                AI Execution
+              </motion.span>
             </h1>
 
             {/* subtext */}
@@ -291,9 +320,14 @@ export default function Hero() {
                 </div>
               ))}
             </div>
+            </motion.div>
           </motion.div>
 
           {/* ── RIGHT — Interactive Demo Card ── */}
+          <motion.div
+            style={{ y: heroCardY }}
+            className="flex flex-col justify-center gap-3"
+          >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -525,6 +559,27 @@ export default function Hero() {
 
               </div>
             </div>
+          </motion.div>
+
+          {/* Replay button */}
+          {phase === "done" && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex justify-center"
+            >
+              <button
+                onClick={() => { setPhase("idle"); setTick(0); setTimeout(() => setPhase("typing"), 150); }}
+                className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-orange-500 transition-colors px-4 py-2 rounded-full border border-slate-200 hover:border-orange-300 bg-white/80 backdrop-blur-sm"
+              >
+                <svg viewBox="0 0 16 16" fill="none" width="12" height="12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 8a6 6 0 1 0 1.5-3.9M2 4v4h4" />
+                </svg>
+                Replay demo
+              </button>
+            </motion.div>
+          )}
           </motion.div>
 
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 
 const stages = [
   { 
@@ -45,94 +45,33 @@ const stages = [
 export default function HowItWorks() {
   const [activeStage, setActiveStage] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef   = useRef<HTMLElement>(null);
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothMouseX = useSpring(mouseX, { damping: 50, stiffness: 300 });
-  const smoothMouseY = useSpring(mouseY, { damping: 50, stiffness: 300 });
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
+  const headerY = useTransform(scrollYProgress, [0, 0.4], ['40px', '0px']);
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.25], [0, 1]);
 
   useEffect(() => {
     if (isPaused) return;
     
     const interval = setInterval(() => {
       setActiveStage((prev) => (prev + 1) % stages.length);
-    }, 4000);
+    }, 6500);
 
     return () => clearInterval(interval);
   }, [isPaused]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) / rect.width;
-    const y = (e.clientY - rect.top - rect.height / 2) / rect.height;
-    mouseX.set(x);
-    mouseY.set(y);
-    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
   return (
     <section 
-      className="relative min-h-screen bg-gradient-to-b from-white via-orange-50/20 to-white text-black flex items-center justify-center overflow-hidden"
-      onMouseMove={handleMouseMove}
-      ref={containerRef}
+      ref={sectionRef}
+      className="relative bg-white text-black flex items-center justify-center overflow-hidden"
     >
-      {/* Sophisticated background layers */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Animated mesh gradient */}
-        <motion.div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: "radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.08), transparent 50%), radial-gradient(circle at 70% 80%, rgba(251, 146, 60, 0.06), transparent 50%)",
-            x: smoothMouseX,
-            y: smoothMouseY,
-          }}
-        />
-        
-        {/* Noise texture overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          }}
-        />
 
-        {/* Floating orbs */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-96 h-96 rounded-full"
-            style={{
-              background: `radial-gradient(circle, rgba(249, 115, 22, ${0.03 + i * 0.01}), transparent 70%)`,
-              filter: "blur(60px)",
-              left: `${20 + i * 30}%`,
-              top: `${30 + i * 20}%`,
-            }}
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 15 + i * 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 2,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="relative z-10 max-w-7xl w-full px-6 py-24 md:py-32">
-        {/* Header with stagger animation */}
+      <div className="relative z-10 max-w-7xl w-full px-6 py-14 md:py-20">
+        {/* Header with scroll-driven entrance */}
         <motion.div 
-          className="mb-24 text-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          className="mb-12 text-center"
+          style={{ y: headerY, opacity: headerOpacity }}
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -163,25 +102,22 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          {/* Glow effect behind container */}
-          <div className="absolute -inset-8 bg-gradient-to-r from-orange-500/10 via-orange-400/5 to-orange-500/10 rounded-[3rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-          
-          <div className="relative border border-black/[0.08] rounded-[2.5rem] p-6 md:p-12 lg:p-16 bg-white/80 backdrop-blur-2xl shadow-[0_8px_80px_rgba(0,0,0,0.08),0_0_1px_rgba(0,0,0,0.1)] overflow-hidden">
+          <div className="relative p-6 md:p-8 lg:p-10 overflow-hidden">
             {/* Animated connection line */}
-            <div className="hidden lg:block absolute left-16 right-16 top-32 h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+            <div className="hidden lg:block absolute left-16 right-16 top-[88px] h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent" />
             
             <motion.div
-              className="hidden lg:block absolute top-32 h-[2px] bg-gradient-to-r from-orange-500/0 via-orange-500 to-orange-500/0 shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+              className="hidden lg:block absolute top-[88px] h-[3px] bg-gradient-to-r from-orange-500/0 via-orange-500 to-orange-500/0 shadow-[0_0_24px_rgba(249,115,22,0.6)]"
               style={{ left: "4rem" }}
               animate={{ 
                 width: ["0%", "calc(100% - 8rem)"],
                 opacity: [0, 1, 1, 0]
               }}
               transition={{ 
-                duration: 4,
+                duration: 6.5,
                 repeat: Infinity,
                 ease: "easeInOut",
-                times: [0, 0.1, 0.9, 1]
+                times: [0, 0.08, 0.92, 1]
               }}
             />
 
@@ -196,8 +132,8 @@ export default function HowItWorks() {
                     className="relative flex flex-col group/card"
                     onHoverStart={() => setIsPaused(true)}
                     onHoverEnd={() => setIsPaused(false)}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: index === 0 ? -40 : index === 1 ? 0 : 40, y: index === 1 ? 30 : 0 }}
+                    whileInView={{ opacity: 1, x: 0, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ 
                       duration: 0.6, 
@@ -207,7 +143,7 @@ export default function HowItWorks() {
                   >
                     {/* Premium icon with magnetic effect */}
                     <motion.div 
-                      className="mb-10 relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-white to-gray-50 border border-black/[0.08] flex items-center justify-center p-5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] mx-auto lg:mx-0 cursor-pointer"
+                      className="mb-6 relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-white to-gray-50 border border-black/[0.08] flex items-center justify-center p-5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] mx-auto lg:mx-0 cursor-pointer"
                       whileHover={{ 
                         scale: 1.08,
                         rotate: [0, -5, 5, 0],
@@ -263,8 +199,9 @@ export default function HowItWorks() {
                     <motion.div 
                       className="text-[0.65rem] font-bold tracking-[0.25em] uppercase mb-4 font-sans text-center lg:text-left"
                       animate={{
-                        color: isActive ? "rgb(249, 115, 22)" : "rgb(0, 0, 0, 0.4)",
+                        color: isActive ? "rgb(249, 115, 22)" : "rgb(0, 0, 0, 0.6)",
                       }}
+                      transition={{ duration: 0.3 }}
                     >
                       {stage.label}
                     </motion.div>
@@ -275,7 +212,7 @@ export default function HowItWorks() {
                     </h3>
 
                     {/* Description */}
-                    <p className="text-base text-black/50 leading-relaxed font-sans mb-8 text-center lg:text-left">
+                    <p className="text-base text-black/50 leading-relaxed font-sans mb-5 text-center lg:text-left">
                       {stage.desc}
                     </p>
 
@@ -284,11 +221,14 @@ export default function HowItWorks() {
                       className="relative p-6 lg:p-7 rounded-2xl border overflow-hidden mt-auto"
                       animate={{
                         borderColor: isActive 
-                          ? "rgba(249, 115, 22, 0.2)" 
-                          : "rgba(0,0,0,0.06)",
+                          ? "rgba(249, 115, 22, 0.3)" 
+                          : "rgba(0,0,0,0.08)",
                         backgroundColor: isActive 
                           ? "rgba(255, 255, 255, 1)" 
-                          : "rgba(249, 250, 251, 0.5)"
+                          : "rgba(249, 250, 251, 0.6)",
+                        boxShadow: isActive
+                          ? "0 8px 32px rgba(249, 115, 22, 0.08)"
+                          : "0 2px 8px rgba(0, 0, 0, 0.02)"
                       }}
                       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     >
@@ -374,8 +314,9 @@ export default function HowItWorks() {
                               <motion.span
                                 className="leading-relaxed"
                                 animate={{
-                                  color: isActive ? "#171717" : "#6B7280"
+                                  color: isActive ? "#171717" : "#4B5563"
                                 }}
+                                transition={{ duration: 0.3 }}
                               >
                                 {isActive ? (
                                   <motion.span
@@ -399,11 +340,11 @@ export default function HowItWorks() {
                       <AnimatePresence>
                         {isActive && (
                           <motion.div
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-orange-400 rounded-b-2xl"
+                            className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-orange-500 to-orange-400 rounded-b-2xl"
                             initial={{ scaleX: 0, originX: 0 }}
                             animate={{ scaleX: 1 }}
                             exit={{ scaleX: 0 }}
-                            transition={{ duration: 4, ease: "linear" }}
+                            transition={{ duration: 6.5, ease: "linear" }}
                           />
                         )}
                       </AnimatePresence>
@@ -414,7 +355,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Premium stage indicators */}
-            <div className="flex justify-center items-center gap-4 mt-16">
+            <div className="flex justify-center items-center gap-4 mt-8">
               {stages.map((stage, index) => (
                 <button
                   key={index}
