@@ -90,12 +90,6 @@ export default function FinalCTA() {
           </p>
           <div className="flex flex-wrap gap-4">
             <a
-              href="#get-started"
-              className="px-8 py-4 bg-[#F97316] text-white font-semibold rounded-lg hover:bg-[#EA580C] transition-all duration-300 shadow-lg hover:shadow-xl text-base"
-            >
-              Get Started Free
-            </a>
-            <a
               href="#book-demo"
               className="px-8 py-4 bg-white text-aziron-dark font-semibold rounded-lg border-2 border-black/10 hover:border-black/20 transition-all duration-300 text-base"
             >

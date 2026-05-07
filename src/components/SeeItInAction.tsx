@@ -72,6 +72,7 @@ const slides = [
 export default function SeeItInAction() {
   const ref     = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
+  const scrollTrackMinHeight = '100vh'
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
   const smooth = useSpring(scrollYProgress, { stiffness: 50, damping: 20 })
@@ -108,16 +109,22 @@ export default function SeeItInAction() {
 
   const jumpToSlide = (i: number) => {
     if (!ref.current) return
-    const top = ref.current.getBoundingClientRect().top + window.scrollY
-    const h   = ref.current.scrollHeight - window.innerHeight
-    window.scrollTo({ top: top + h * [0.02, 0.38, 0.72][i], behavior: 'smooth' })
+    const el = ref.current
+    const top = el.getBoundingClientRect().top + window.scrollY
+    const h = el.scrollHeight - window.innerHeight
+    if (h <= 0) return
+    window.scrollTo({ top: top + h * [0.04, 0.40, 0.74][i], behavior: 'smooth' })
   }
 
   return (
     <section
       ref={ref}
       className="relative overflow-hidden"
-      style={{ height: '100vh', background: 'linear-gradient(135deg, #0A2540 0%, #0D1B3E 50%, #0A1628 100%)' }}
+      style={{
+        /* Fixed to one viewport height per request. */
+        minHeight: scrollTrackMinHeight,
+        background: 'linear-gradient(135deg, #0A2540 0%, #0D1B3E 50%, #0A1628 100%)',
+      }}
     >
 
 
@@ -138,7 +145,7 @@ export default function SeeItInAction() {
       <div className="sticky top-0 h-screen flex items-center px-8 md:px-14 lg:px-20 gap-10 lg:gap-16 z-10 overflow-hidden">
 
         {/* ────────────────────────── LEFT 40% ─────────────────────────── */}
-        <div className="w-full md:w-[40%] flex-shrink-0">
+        <div className="w-full md:w-[40%] flex-shrink-0 relative z-20">
 
           {/* Section label */}
           <div className="flex items-center gap-3 mb-10">
@@ -149,25 +156,26 @@ export default function SeeItInAction() {
           </div>
 
           {/* ── NUMBER NAV ── */}
-          <div className="flex border-t border-white/[0.07] mb-12">
+          <div className="flex border-t border-white/[0.07] mb-12 isolate">
             {slides.map((slide, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => jumpToSlide(i)}
-                className="flex-1 pt-5 pb-4 text-left relative group border-r border-white/[0.05] last:border-r-0"
+                className="flex-1 pt-5 pb-4 text-center relative group border-r border-white/[0.05] last:border-r-0 cursor-pointer"
               >
                 {/* Animated top-line fill */}
                 <motion.div
-                  className="absolute top-0 left-0 h-[1.5px] w-full origin-left"
+                  className="absolute top-0 left-0 h-[1.5px] w-full origin-left pointer-events-none"
                   style={{ background: slide.accentColor, scaleX: opacities[i] }}
                 />
                 {/* Number — dim ghost always visible, colored on active */}
-                <div className="relative mb-2 leading-none">
+                <div className="relative mb-2 leading-none text-center">
                   <span className="block text-[4.5rem] font-black text-white/[0.07] leading-none select-none tabular-nums">
                     {slide.num}
                   </span>
                   <motion.span
-                    className="absolute top-0 left-0 text-[4.5rem] font-black leading-none select-none tabular-nums"
+                    className="absolute inset-x-0 top-0 block text-[4.5rem] font-black leading-none select-none tabular-nums text-center pointer-events-none"
                     style={{ color: slide.accentColor, opacity: opacities[i] }}
                   >
                     {slide.num}
@@ -218,7 +226,7 @@ export default function SeeItInAction() {
         </div>
 
         {/* ────────────────────────── RIGHT 60% ─────────────────────────── */}
-        <div className="hidden md:block relative flex-1 h-[76vh]">
+        <div className="hidden md:block relative flex-1 h-[76vh] pointer-events-none [&_*]:pointer-events-none">
 
           {/* Background wordmarks */}
           {slides.map((slide, i) => (
@@ -298,7 +306,7 @@ export default function SeeItInAction() {
               border: '1px solid rgba(255,255,255,0.07)',
               boxShadow: '0 48px 140px rgba(0,0,0,0.95), 0 0 0 0.5px rgba(255,255,255,0.04) inset',
             }}
-            className="absolute inset-0 flex flex-col rounded-2xl overflow-hidden"
+            className="absolute inset-0 flex flex-col rounded-2xl overflow-hidden pointer-events-none"
           >
             {/* Title bar */}
             <div

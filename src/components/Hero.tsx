@@ -291,16 +291,10 @@ export default function Hero() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3">
               <a
-                href="#get-started"
+                href="#book-demo"
                 className="px-8 py-4 bg-[#F97316] text-white font-semibold rounded-lg hover:bg-[#EA580C] transition-all shadow-lg text-center"
               >
-                Get Started Free
-              </a>
-              <a
-                href="#book-demo"
-                className="px-8 py-4 bg-white text-slate-700 font-semibold rounded-lg border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-all text-center"
-              >
-                Book a Demo
+                Book Demo
               </a>
             </div>
 
